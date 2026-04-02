@@ -18,7 +18,6 @@
 		<module>plugins/at.ac.tuwien.big.momot.lang</module>
 		<module>plugins/at.ac.tuwien.big.momot.lang.ui</module>
 		<module>plugins/at.ac.tuwien.big.momot.ui.popup</module>
-		<module>examples</module>
 		<module>features</module>
 		<module>releng</module>
 		<!--
