@@ -176,7 +176,7 @@ Recommended smoke flow:
 3. Confirm response contains:
 	- `success: true`
 	- `exitCode: 0`
-	- non-empty `outputs`
+	- `outputs` list is present (may be empty depending on script result blocks)
 
 If `exitCode` is non-zero, inspect:
 
