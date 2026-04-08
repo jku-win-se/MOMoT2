@@ -163,22 +163,11 @@ final class MomotScriptCompiler {
             normalizedContent = normalizedContent.replace("._eINSTANCE;", "._eINSTANCE.getClass();");
          }
 
-         // Some generated sections target API shapes that differ between MOMoT runtime variants.
-         // Keep the core search execution path and simplify optional reporting sections.
-         normalizedContent = normalizedContent.replace("SearchExperiment<TransformationSolution>", "SearchExperiment");
-         normalizedContent = normalizedContent.replace("ISolutionWriter<TransformationSolution>", "ISolutionWriter");
-         normalizedContent = normalizedContent.replace("IPopulationWriter<TransformationSolution>", "IPopulationWriter");
-         normalizedContent = replaceMethodBody(normalizedContent,
-               "protected SearchAnalyzer performAnalysis(final SearchExperiment experiment)",
-               "return null;");
-         normalizedContent = replaceMethodBody(normalizedContent,
-               "protected TransformationResultManager handleResults(final SearchExperiment experiment)",
-               "return null;");
+            // Some generated sections target API shapes that differ between MOMoT runtime variants.
+            // Keep only minimal compatibility normalization so analysis/results can still execute.
          normalizedContent = replaceMethodBody(normalizedContent,
                "public void printSearchInfo(final TransformationSearchOrchestration orchestration)",
                "System.out.println(\"Search initialized.\");");
-         normalizedContent = normalizedContent.replace("performAnalysis(experiment);", "// analysis disabled in headless compatibility mode");
-         normalizedContent = normalizedContent.replace("handleResults(experiment);", "// result post-processing disabled in headless compatibility mode");
 
          if(!normalizedContent.equals(content)) {
             Files.writeString(javaSource, normalizedContent, StandardCharsets.UTF_8);

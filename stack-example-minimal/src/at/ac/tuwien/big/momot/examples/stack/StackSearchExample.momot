@@ -35,7 +35,7 @@ search = {
    
    fitness = {
       objectives = {
-           StandardDeviation : minimize { 0.0 }
+           LoadRange         : minimize { 0.0 }
           SolutionLength    : minimize new TransformationLengthDimension
       }
       solutionRepairer = new TransformationPlaceholderRepairer
@@ -68,8 +68,8 @@ analysis = {
    indicators        = [ hypervolume additiveEpsilonIndicator maximumParetoFrontError  ]
    show               = [ individualValues aggregateValues statisticalSignificance ]
    significance     = 0.01
-   outputFile       = "example/output/analysis.txt"
-   boxplotDirectory = "example/output/boxplot/"
+   outputFile       = "out/analysis/analysis.txt"
+   boxplotDirectory = "out/analysis/boxplot/"
    printOutput
 }
    
@@ -79,55 +79,55 @@ results = {
    }
    
    objectives = {
-      outputFile = "example/output/overall_objectives.pf"
+      outputFile = "out/objectives/overall_objectives.pf"
       printOutput
    }
    
    objectives = {
       algorithms = [ NSGA_III, NSGA_II ]
-      outputFile = "example/output/moea_objectives.pf"
+      outputFile = "out/objectives/moea_objectives.pf"
       printOutput
    }
    
    objectives = {
       algorithms = [ NSGA_III, NSGA_II ]
       neighborhoodSize = 3
-      outputFile = "example/output/moea_kneepoints_objectives.pf"
+      outputFile = "out/objectives/moea_kneepoints_objectives.pf"
       printOutput
    }
    
    solutions = {
-      outputFile = "example/output/overall_solutions.txt"
-      outputDirectory ="example/output/solutions/all/"
+      outputFile = "out/solutions/overall_solutions.txt"
+      outputDirectory ="out/solutions/all/"
    }
    
    solutions = {
       algorithms = [ NSGA_III, NSGA_II ]
-      outputFile = "example/output/moea_solutions.txt"
-      outputDirectory ="example/output/solutions/moea/"
+      outputFile = "out/solutions/moea_solutions.txt"
+      outputDirectory ="out/solutions/moea/"
    }
    
    solutions = {
       algorithms = [ NSGA_III, NSGA_II ]
       neighborhoodSize = maxNeighborhoodSize
-      outputFile = "example/output/solutions/moea_kneepoint_solutions.txt"
-      outputDirectory ="example/output/solutions/moea/kneepoints/"
+      outputFile = "out/solutions/moea_kneepoint_solutions.txt"
+      outputDirectory ="out/solutions/moea/kneepoints/"
       printOutput
    }
    
    models = {
-      outputDirectory = "example/output/models/testing ladida"
+      outputDirectory = "out/models/all/"
       printOutput
    }
    
    models = {
       algorithms = [ NSGA_III, NSGA_II ]
-      outputDirectory = "example/output/models/moea/"
+      outputDirectory = "out/models/moea/"
    }
    
    models = {
       algorithms = [ Random ]
-      outputDirectory = "example/output/models/random/"
+      outputDirectory = "out/models/random/"
    }
 }   
 

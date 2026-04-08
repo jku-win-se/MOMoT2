@@ -301,14 +301,29 @@ public final class RestServerMain {
       try(ZipOutputStream zipOutputStream = new ZipOutputStream(byteStream)) {
          final Path runnerDir = jobDir.resolve("runner");
          final Path outDir = jobDir.resolve("out");
+         final Path workOutDir = jobDir.resolve("work").resolve("out");
          if(Files.exists(runnerDir)) {
             addTree(zipOutputStream, runnerDir, "runner");
          }
-         if(Files.exists(outDir)) {
+         if(Files.exists(outDir) && hasRegularFiles(outDir)) {
             addTree(zipOutputStream, outDir, "out");
+         } else if(Files.exists(workOutDir) && hasRegularFiles(workOutDir)) {
+            addTree(zipOutputStream, workOutDir, "out");
          }
       }
       return byteStream.toByteArray();
+   }
+
+   private static boolean hasRegularFiles(final Path root) throws IOException {
+      if(Files.isRegularFile(root)) {
+         return true;
+      }
+      if(!Files.exists(root)) {
+         return false;
+      }
+      try(java.util.stream.Stream<Path> stream = Files.walk(root)) {
+         return stream.anyMatch(Files::isRegularFile);
+      }
    }
 
    private static void addTree(final ZipOutputStream zipOutputStream, final Path root, final String prefix) throws IOException {
