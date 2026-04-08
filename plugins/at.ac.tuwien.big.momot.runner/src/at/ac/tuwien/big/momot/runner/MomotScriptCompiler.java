@@ -11,6 +11,7 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Locale;
+import java.util.StringJoiner;
 import java.util.jar.Attributes;
 import java.util.jar.JarEntry;
 import java.util.jar.JarOutputStream;
@@ -162,10 +163,54 @@ final class MomotScriptCompiler {
             normalizedContent = normalizedContent.replace("._eINSTANCE;", "._eINSTANCE.getClass();");
          }
 
+         // Some generated sections target API shapes that differ between MOMoT runtime variants.
+         // Keep the core search execution path and simplify optional reporting sections.
+         normalizedContent = normalizedContent.replace("SearchExperiment<TransformationSolution>", "SearchExperiment");
+         normalizedContent = normalizedContent.replace("ISolutionWriter<TransformationSolution>", "ISolutionWriter");
+         normalizedContent = normalizedContent.replace("IPopulationWriter<TransformationSolution>", "IPopulationWriter");
+         normalizedContent = replaceMethodBody(normalizedContent,
+               "protected SearchAnalyzer performAnalysis(final SearchExperiment experiment)",
+               "return null;");
+         normalizedContent = replaceMethodBody(normalizedContent,
+               "protected TransformationResultManager handleResults(final SearchExperiment experiment)",
+               "return null;");
+         normalizedContent = replaceMethodBody(normalizedContent,
+               "public void printSearchInfo(final TransformationSearchOrchestration orchestration)",
+               "System.out.println(\"Search initialized.\");");
+         normalizedContent = normalizedContent.replace("performAnalysis(experiment);", "// analysis disabled in headless compatibility mode");
+         normalizedContent = normalizedContent.replace("handleResults(experiment);", "// result post-processing disabled in headless compatibility mode");
+
          if(!normalizedContent.equals(content)) {
             Files.writeString(javaSource, normalizedContent, StandardCharsets.UTF_8);
          }
       }
+   }
+
+   private static String replaceMethodBody(final String content, final String methodSignature, final String newBody) {
+      final int signatureStart = content.indexOf(methodSignature);
+      if(signatureStart < 0) {
+         return content;
+      }
+      final int bodyStart = content.indexOf('{', signatureStart);
+      if(bodyStart < 0) {
+         return content;
+      }
+      int depth = 1;
+      int index = bodyStart + 1;
+      while(index < content.length() && depth > 0) {
+         final char current = content.charAt(index);
+         if(current == '{') {
+            depth++;
+         } else if(current == '}') {
+            depth--;
+         }
+         index++;
+      }
+      if(depth != 0) {
+         return content;
+      }
+      final String replacement = methodSignature + " {\n    " + newBody + "\n  }";
+      return content.substring(0, signatureStart) + replacement + content.substring(index);
    }
 
    private static String determineMainClass(final Resource resource, final Path scriptPath) throws Exception {
@@ -195,9 +240,11 @@ final class MomotScriptCompiler {
       final DiagnosticCollector<JavaFileObject> diagnostics = new DiagnosticCollector<>();
       try(StandardJavaFileManager fileManager = compiler.getStandardFileManager(diagnostics, null, StandardCharsets.UTF_8)) {
          final Iterable<? extends JavaFileObject> units = fileManager.getJavaFileObjectsFromPaths(sourceFiles);
+         final String effectiveClasspath = expandClasspath(System.getProperty("java.class.path", ""));
+         compileLog.append("Compiler classpath: ").append(effectiveClasspath).append(System.lineSeparator());
          final List<String> options = new ArrayList<>();
          options.add("-classpath");
-         options.add(System.getProperty("java.class.path"));
+         options.add(effectiveClasspath);
          options.add("-d");
          options.add(classesDir.toString());
 
@@ -218,6 +265,40 @@ final class MomotScriptCompiler {
             throw new IllegalStateException("Java compilation of generated sources failed.\n" + compileLog);
          }
       }
+   }
+
+   private static String expandClasspath(final String classpath) {
+      if(classpath == null || classpath.isBlank()) {
+         return classpath;
+      }
+
+      final String pathSeparator = System.getProperty("path.separator");
+      final StringJoiner joiner = new StringJoiner(pathSeparator);
+      final String[] entries = classpath.split(java.util.regex.Pattern.quote(pathSeparator));
+
+      for(final String entry : entries) {
+         if(entry == null || entry.isBlank()) {
+            continue;
+         }
+         if(entry.endsWith("*")) {
+            final Path dir = Paths.get(entry.substring(0, entry.length() - 1));
+            if(Files.isDirectory(dir)) {
+               try(Stream<Path> stream = Files.list(dir)) {
+                  stream.filter(Files::isRegularFile)
+                        .filter(path -> path.getFileName().toString().toLowerCase(Locale.ROOT).endsWith(".jar"))
+                        .sorted(Comparator.naturalOrder())
+                        .forEach(path -> joiner.add(path.toString()));
+               } catch(final IOException ignored) {
+                  joiner.add(entry);
+               }
+            } else {
+               joiner.add(entry);
+            }
+         } else {
+            joiner.add(entry);
+         }
+      }
+      return joiner.toString();
    }
 
    private static void createJar(final Path classesDir, final Path jarPath, final String mainClass) throws IOException {

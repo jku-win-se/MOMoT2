@@ -2,7 +2,7 @@ FROM maven:3.9-eclipse-temurin AS build
 WORKDIR /src
 COPY . .
 ENV MAVEN_OPTS="-Djdk.xml.maxGeneralEntitySizeLimit=0 -Djdk.xml.totalEntitySizeLimit=0"
-RUN mvn -pl tooling/at.ac.tuwien.big.momot.tooling,plugins/at.ac.tuwien.big.moea,plugins/at.ac.tuwien.big.momot.core,plugins/at.ac.tuwien.big.momot.runner -am -Declipse.release=latest -DskipTests=true package
+RUN mvn -pl tooling/at.ac.tuwien.big.momot.tooling,plugins/at.ac.tuwien.big.moea,plugins/at.ac.tuwien.big.momot.core,plugins/at.ac.tuwien.big.momot.runner -am -Declipse.release=latest -DskipTests=true clean package
 RUN mkdir -p /app/repository/plugins
 RUN cp /src/plugins/at.ac.tuwien.big.momot.runner/target/at.ac.tuwien.big.momot.runner-*.jar /app/repository/plugins/
 RUN cp /src/plugins/at.ac.tuwien.big.moea/target/at.ac.tuwien.big.moea-*.jar /app/repository/plugins/
@@ -19,6 +19,8 @@ RUN set -eux; \
 		cp "$jar_path" /app/repository/plugins/; \
 	done
 RUN mvn -pl plugins/at.ac.tuwien.big.momot.runner -DskipTests=true -DincludeScope=runtime dependency:copy-dependencies -DoutputDirectory=/app/repository/plugins
+RUN find /app/repository/plugins -type f \( -name '*-sources.jar' -o -name '*-javadoc.jar' \) -delete
+RUN rm -f /app/repository/plugins/guava-18.0.jar
 RUN set -eux; \
 	base_url="https://download.eclipse.org/modeling/emft/henshin/updates/release/plugins"; \
 	curl -fsSL "$base_url/org.eclipse.emf.henshin.model_1.8.0.202302121604.jar" -o "/app/repository/plugins/org.eclipse.emf.henshin.model_1.8.0.202302121604.jar"; \

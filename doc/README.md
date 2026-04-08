@@ -18,6 +18,7 @@ This directory contains practical documentation for creating, packaging, and exe
 6. [06-results-and-output-layout.md](06-results-and-output-layout.md)
 7. [07-finalization-and-logging.md](07-finalization-and-logging.md)
 8. [08-validation-and-runbook.md](08-validation-and-runbook.md)
+9. [09-minimal-test-case.md](09-minimal-test-case.md)
 
 ## Companion notes
 
@@ -37,6 +38,7 @@ The [modelserver](modelserver/README.md) subfolder contains standalone/OSGi and 
 - `/run` requests upload zip as raw binary (`application/zip`), not multipart form-data.
 - `script=<relative-path>` exactly matches the extracted path inside the uploaded archive.
 - Interactive API docs are available at `/docs` (OpenAPI JSON at `/openapi.json`).
+- Minimal end-to-end fixture can be run via `scripts/run-minimal-rest-test.ps1` or `scripts/run-minimal-rest-test.sh`.
 - Search algorithm and experiment settings are syntactically valid.
 - Output writes to an expected subfolder (for example `out/`).
 - A dry-run validation is completed before posting to `/run`.

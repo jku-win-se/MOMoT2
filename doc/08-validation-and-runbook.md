@@ -71,6 +71,29 @@ curl.exe -sS -X POST "http://localhost:8080/run?script=src/at/ac/tuwien/big/momo
 
 Use this when validating the current repository's known-good REST path.
 
+### One-command test (recommended)
+
+PowerShell (Windows):
+
+```powershell
+./scripts/run-minimal-rest-test.ps1
+```
+
+Bash (Linux/macOS):
+
+```bash
+./scripts/run-minimal-rest-test.sh
+```
+
+Useful options:
+
+1. `Port`/`PORT` (default `8081`) to avoid local `8080` conflicts.
+2. `SkipBuild`/`SKIP_BUILD=1` to reuse an existing image.
+3. `KeepContainer`/`KEEP_CONTAINER=1` to keep the container running after test.
+4. `KeepArtifacts`/`KEEP_ARTIFACTS=1` to retain payload/response artifacts for debugging.
+
+### Manual fallback steps
+
 1. Build deterministic payload workspace:
 
 ```powershell
