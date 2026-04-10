@@ -10,6 +10,7 @@ This directory contains practical documentation for creating, packaging, and exe
 
 ## Reading order
 
+0. [00-architecture-overview.md](00-architecture-overview.md)
 1. [01-package-and-entrypoints.md](01-package-and-entrypoints.md)
 2. [02-inputs-and-model-paths.md](02-inputs-and-model-paths.md)
 3. [03-imports-and-henshin-modules.md](03-imports-and-henshin-modules.md)

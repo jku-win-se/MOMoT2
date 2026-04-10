@@ -16,3 +16,9 @@ hs_err_pid*
 
 # xtend
 *.xtendbin
+
+# Obsidian vault (local-only)
+.obsidian/
+
+# Local tooling scripts (not shared)
+local-scripts/
