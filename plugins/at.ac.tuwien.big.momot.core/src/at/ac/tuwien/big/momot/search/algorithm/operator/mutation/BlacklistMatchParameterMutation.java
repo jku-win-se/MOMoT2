@@ -23,6 +23,7 @@ import java.util.List;
 
 import org.eclipse.emf.common.util.EList;
 import org.eclipse.emf.henshin.model.Parameter;
+import org.eclipse.emf.henshin.model.ParameterKind;
 
 public class BlacklistMatchParameterMutation extends AbstractTransformationMutation {
 
@@ -68,6 +69,9 @@ public class BlacklistMatchParameterMutation extends AbstractTransformationMutat
 
       final EList<Parameter> ruleParameters = randomMatch.getUnit().getParameters();
       for(final Parameter parameter : ruleParameters) {
+         if(parameter.getKind() == ParameterKind.VAR) {
+            continue;
+         }
          if(blackList.contains(parameter)) {
             continue;
          }

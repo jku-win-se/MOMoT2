@@ -6,6 +6,9 @@ Bundle-Description: %Bundle-Description
 Bundle-Vendor: %Bundle-Vendor
 Bundle-Version: 2.0.0.qualifier
 Bundle-RequiredExecutionEnvironment: JavaSE-1.8
-Require-Bundle: org.junit;bundle-version="[4.11.0,5.0.0)"
+Require-Bundle: org.junit;bundle-version="[4.11.0,5.0.0)",
+ at.ac.tuwien.big.momot.core,
+ org.eclipse.emf.henshin.model,
+ org.eclipse.emf.henshin.interpreter
 Export-Package: at.ac.tuwien.big.momot.core.tests,
  at.ac.tuwien.big.momot.core.tests.suite
