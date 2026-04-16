@@ -314,7 +314,12 @@ function buildMomotScript({ packageName, modelPath, henshinPath, objectiveText }
   return [
     `package ${packageName}`,
     '',
-    'import at.ac.tuwien.big.momot.search.fitness.dimension.TransformationLengthDimension',
+    // Keywords 'search' and 'fitness' are reserved in the MOMoT Xtext DSL,
+    // so they must be escaped with '^' when appearing as segments of an
+    // import FQN -- otherwise the DSL parser fails to resolve the type and
+    // the Java code generator emits 'new Object()' as a fallback, causing
+    // a compile-time type mismatch against IFitnessDimension. See issue #3.
+    'import at.ac.tuwien.big.momot.^search.^fitness.dimension.TransformationLengthDimension',
     '',
     'search = {',
     '   model = {',
