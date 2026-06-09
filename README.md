@@ -1,63 +1,64 @@
-# MOMoT
+# MOMoT — Headless REST Runner & Agent Tooling
+
+[![Project Page](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://jku-win-se.github.io/MOMoT2/)
 
 MOMoT combines model transformation (EMF/Henshin) with search-based optimization to solve complex model-driven engineering tasks.
 
-This repository contains:
+**Project page:** https://jku-win-se.github.io/MOMoT2/
 
-- Eclipse/Tycho plugins for MOMoT core and language tooling
-- Headless runner components
-- Dockerized REST execution flow (zip-in/zip-out)
-- Minimal reproducible stack example for validation
+---
 
-## Repository Structure
+## Repository branches
 
-Key directories:
+| Branch | Purpose | Get started |
+| --- | --- | --- |
+| **`standalone`** (this branch) | **Headless REST** runner, Docker, MCP server, E2E test suite | [Quick start](#quick-start) · [AGENTS.md](AGENTS.md) |
+| **`main`** | Full **Eclipse IDE** distribution, all case-study examples, [update site](https://jku-win-se.github.io/MOMoT2/eclipse/updates/latest/develop/) | [Clone `main`](https://github.com/jku-win-se/MOMoT2/tree/main) · [README on main](https://github.com/jku-win-se/MOMoT2/blob/main/README.md) |
 
-- `plugins/`: MOMoT, MOEA, language, runner, and UI plugins
-- `tooling/`: target platform and build tooling
-- `headless/`: headless runtime modules
-- `mcp/`: MCP server integration
-- `stack-example-minimal/`: minimal fixture for deterministic testing
-- `doc/`: runbook and implementation docs
+See the [branches guide](https://jku-win-se.github.io/MOMoT2/branches.html) on the project site for a detailed comparison.
 
-## Build
+---
 
-Build the headless REST Docker image:
+## `standalone` — What this branch is
 
-```powershell
-docker build -t momot-rest-test -f Dockerfile .
+The **`standalone`** branch is a container-first, headless distribution. It omits the full Eclipse example wizards and IDE packaging in favor of:
+
+- **Docker REST server** — zip-in / zip-out job execution (`POST /run`)
+- **MCP server** (`mcp/`) — stdio JSON-RPC bridge for LLM agents
+- **E2E test suite** (`test-suite/`) — four verified benchmarks (T01–T04)
+- **Henshin validator CLI** (`tools/henshin-validator/`) — local rule validation without Docker
+- **Minimal stack example** (`stack-example-minimal/`) — deterministic smoke test
+- **Agent playbook** — [AGENTS.md](AGENTS.md) documents the full agent workflow
+
+Use **`main`** if you need the Eclipse update site, UI plugins, or the full set of wizard-based case studies.
+
+---
+
+## Quick start
+
+### Build and run the REST server
+
+```bash
+git clone -b standalone https://github.com/jku-win-se/MOMoT2.git
+cd MOMoT2
+docker build -t momot-headless -f Dockerfile.headless .
+docker run --rm -p 8080:8080 momot-headless
 ```
 
-## Run REST Server (Docker)
-
-Run the container (example with host port `8081`):
-
-```powershell
-docker run --rm -p 8081:8080 momot-rest-test
-```
-
-Health endpoint:
+Health check:
 
 ```text
-http://localhost:8081/health
+http://localhost:8080/health
 ```
 
-Swagger/OpenAPI:
+Swagger / OpenAPI:
 
 ```text
-http://localhost:8081/docs
-http://localhost:8081/openapi.json
+http://localhost:8080/docs
+http://localhost:8080/openapi.json
 ```
 
-## Reproducible Minimal Test (Recommended)
-
-Use the automation scripts to run a deterministic end-to-end test with `stack-example-minimal`.
-
-Windows PowerShell:
-
-```powershell
-./scripts/run-minimal-rest-test.ps1
-```
+### Smoke test (recommended)
 
 Linux/macOS:
 
@@ -65,41 +66,90 @@ Linux/macOS:
 ./scripts/run-minimal-rest-test.sh
 ```
 
-Both scripts:
+Windows PowerShell:
 
-1. Build image (unless skipped)
-2. Start container
-3. Build deterministic payload zip
-4. POST to `/run`
-5. Validate `runner/exit_code.txt == 0`
+```powershell
+./scripts/run-minimal-rest-test.ps1
+```
 
-Useful options:
+The script builds the image (unless skipped), starts the container, posts a deterministic stack-balancing job, and asserts `exit_code == 0`.
 
-- Port override (`-Port 8081` or `PORT=8081`)
-- Skip rebuild (`-SkipBuild` or `SKIP_BUILD=1`)
-- Keep container/artifacts for debugging
+### MCP server
 
-## REST API Contract (Summary)
+```bash
+cd mcp
+npm install
+node server.js   # stdio JSON-RPC; relays to REST runner over HTTP
+```
 
-- `GET /health`: readiness check
-- `POST /run?script=<relative/path.momot>`: execute job
+See [mcp/README.md](mcp/README.md) for tool schemas (`generate_artifacts_from_ecore`, `execute_momot_job`, `run_end_to_end`).
+
+---
+
+## Repository structure
+
+| Path | Description |
+| --- | --- |
+| `plugins/` | MOMoT core, MOEA bridge, configuration language, headless runner |
+| `headless/` | Headless runtime modules |
+| `mcp/` | MCP server (Node.js, stdio transport) |
+| `stack-example-minimal/` | Canonical stack load-balancing fixture |
+| `test-suite/` | E2E benchmarks with expected Pareto fronts |
+| `headless-example/` | REST-ready example job payloads |
+| `tools/henshin-validator/` | CLI validator for `.henshin` rules |
+| `doc/` | Architecture docs and validation runbooks |
+| `Dockerfile.headless` | Production headless image (recommended) |
+| `Dockerfile` | Alternate REST image build |
+
+---
+
+## REST API (summary)
+
+| Endpoint | Description |
+| --- | --- |
+| `GET /health` | Readiness check |
+| `POST /run?script=<path.momot>` | Execute job (body = raw `application/zip`) |
 
 Important:
 
-1. Request body for `/run` must be raw `application/zip`.
-2. `script` query parameter must exactly match path inside uploaded zip.
-3. Response is a zip containing `runner/` diagnostics and `out/` outputs.
+1. Request body must be a ZIP containing model files, `.henshin` rules, and the `.momot` script.
+2. The `script` query parameter must exactly match a path inside the uploaded ZIP.
+3. Response is a ZIP with `runner/exit_code.txt`, `runner/runner.log`, and `out/` artifacts.
+
+---
 
 ## Documentation
 
-Start here:
+| Document | Content |
+| --- | --- |
+| [AGENTS.md](AGENTS.md) | Agent playbook — MCP tools, validation tiers, repair loop |
+| [doc/00-architecture-overview.md](doc/00-architecture-overview.md) | REST, MCP, Docker topology |
+| [doc/08-validation-and-runbook.md](doc/08-validation-and-runbook.md) | Full validation runbook |
+| [doc/09-minimal-test-case.md](doc/09-minimal-test-case.md) | Stack example walkthrough |
+| [test-suite/README.md](test-suite/README.md) | Benchmark suite guide |
+| [mcp/README.md](mcp/README.md) | MCP tool reference |
+| [tools/henshin-validator/README.md](tools/henshin-validator/README.md) | CLI validator usage |
 
-- `doc/README.md`
-- `doc/08-validation-and-runbook.md`
-- `doc/09-minimal-test-case.md`
+---
 
-## Project Page
+## `main` — Eclipse IDE distribution
 
-Background and case-study information:
+The **`main`** branch provides the full Eclipse product:
 
-- http://martin-fleck.github.io/momot/
+- Install via update site: `https://jku-win-se.github.io/MOMoT2/eclipse/updates/latest/develop/`
+- All case-study examples with IDE wizards (stack, CRA, modularization, TSE, …)
+- GitHub Pages site with case-study documentation
+
+```bash
+git clone -b main https://github.com/jku-win-se/MOMoT2.git
+cd MOMoT2
+mvn clean install
+```
+
+See [README on main](https://github.com/jku-win-se/MOMoT2/blob/main/README.md) and [MIGRATION.md](https://github.com/jku-win-se/MOMoT2/blob/main/MIGRATION.md).
+
+---
+
+## Authors
+
+MOMoT was developed by Martin Fleck ([@martin-fleck](https://github.com/martin-fleck)), Javier Troya ([@javitroya](https://github.com/javitroya)), and Manuel Wimmer ([@manuelWimmer](https://github.com/manuelWimmer)).
