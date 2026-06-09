@@ -2,5 +2,7 @@ url: https://jku-win-se.github.io
 baseurl: /MOMoT2
 markdown: kramdown
 encoding: UTF-8
+exclude:
+  - agents
 kramdown:
   coderay_tab_width: 3

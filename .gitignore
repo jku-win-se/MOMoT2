@@ -23,7 +23,7 @@ hs_err_pid*
 **/output/
 
 # Keep published p2 site (copied from build output)
-!site/eclipse/updates/latest/develop/**
+!docs/eclipse/updates/latest/develop/**
 
 # xtend
 *.xtendbin
