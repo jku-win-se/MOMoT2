@@ -12,6 +12,17 @@ Desired and prohibited characteristics (objectives and constraints) of the outpu
 Search-based optimization techniques can then be used to search for a Pareto-optimal set of transformation orchestrations, i.e., an ordered sequence of transformations and their parameters, to produce models with these characteristics.
 </div>
 
+### Repository branches
+
+This GitHub repository hosts two development lines:
+
+| Branch | For |
+| --- | --- |
+| **`main`** | Eclipse IDE install, full examples, [update site]({{ site.baseurl }}/eclipse/updates/) |
+| **`standalone`** | Docker REST runner, MCP agent tooling, headless CI |
+
+See the **[full branches guide]({{ site.baseurl }}/branches)** for clone commands, build instructions, and a decision table.
+
 ### How to use MOMoT?
 MOMoT is developed for the Eclipse platform and provides a dedicated configuration language providing support for model engineers to configure the search process.
 MOMoT has been successfully applied on several case studies which showcase how to use MOMoT in a specific scenario.
