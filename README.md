@@ -153,3 +153,7 @@ See [README on main](https://github.com/jku-win-se/MOMoT2/blob/main/README.md) a
 ## Authors
 
 MOMoT was developed by Martin Fleck ([@martin-fleck](https://github.com/martin-fleck)), Javier Troya ([@javitroya](https://github.com/javitroya)), and Manuel Wimmer ([@manuelWimmer](https://github.com/manuelWimmer)).
+
+The MCP server and agent integration on the **standalone** branch were developed by MohammadHadi Dehghani ([@hadiDHD](https://github.com/hadiDHD)).
+
+The MCP server and agent integration on the **standalone** branch were developed by MohammadHadi Dehghani ([@hadiDHD](https://github.com/hadiDHD)).
