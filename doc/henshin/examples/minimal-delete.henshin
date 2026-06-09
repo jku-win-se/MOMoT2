@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<henshin:Module xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin"
+    name="MinimalDelete">
+
+  <imports href="http://example.org/mymodel/1.0#/"/>
+
+  <!--
+    Smallest safe delete rule.
+    The NAC prevents deletion if the node still has children, avoiding dangling edges.
+
+    Without the NAC the rule would fire on any SomeClass node regardless of its state.
+    With the NAC it only fires when no 'children' edge exists on the candidate node.
+  -->
+  <units xsi:type="henshin:Rule" name="deleteLeafNode">
+    <parameters name="targetId" kind="IN">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+
+    <lhs name="Lhs">
+      <!-- Match the node to be deleted by its id attribute -->
+      <nodes xmi:id="_lhs_node" name="toDelete" type="http://example.org/mymodel/1.0#//SomeClass">
+        <attributes value="targetId">
+          <type href="http://example.org/mymodel/1.0#//SomeClass/id"/>
+        </attributes>
+      </nodes>
+
+      <!--
+        NAC: "do NOT fire if toDelete has a child"
+        The NestedCondition describes a forbidden pattern.
+        <mappings> inside the NAC binds _lhs_node to _nac_node so the engine
+        knows they refer to the same model object.
+      -->
+      <formula xsi:type="henshin:Not">
+        <child xsi:type="henshin:NestedCondition">
+          <conclusion>
+            <nodes xmi:id="_nac_node" outgoing="_nac_edge">
+              <type href="http://example.org/mymodel/1.0#//SomeClass"/>
+            </nodes>
+            <nodes xmi:id="_nac_child" incoming="_nac_edge">
+              <type href="http://example.org/mymodel/1.0#//SomeClass"/>
+            </nodes>
+            <edges xmi:id="_nac_edge" source="_nac_node" target="_nac_child">
+              <type href="http://example.org/mymodel/1.0#//SomeClass/children"/>
+            </edges>
+          </conclusion>
+          <!-- Bind the matched LHS node into the NAC's forbidden pattern -->
+          <mappings origin="_lhs_node" image="_nac_node"/>
+        </child>
+      </formula>
+    </lhs>
+
+    <!--
+      RHS is empty.
+      _lhs_node has no counterpart in the RHS (no mapping), so it is DELETED.
+    -->
+    <rhs name="Rhs"/>
+
+  </units>
+
+</henshin:Module>

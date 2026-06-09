@@ -22,7 +22,7 @@ For the full validation runbook, see [08-validation-and-runbook.md](08-validatio
 
 ## MCP Server Tools
 
-The MCP server (`mcp/server.js`, v1.1.0) exposes six tools split into core and convenience categories. Core tools handle artifact generation, job execution, and end-to-end orchestration. Convenience tools provide script scaffolding, validation, and a simplified run interface.
+The MCP server (`mcp/server.js`, v1.1.0) exposes three public tools: `generate_artifacts_from_ecore`, `execute_momot_job`, and `run_end_to_end`.
 
 ![MCP Tools](../images/20260410_mcp_tools.png)
 

@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  T04 Task Scheduling Henshin module.
+
+  Rules:
+    reassignTask – moves a Task from its current Machine to a different Machine
+                   by updating the Task.assignedTo reference.
+
+  The rule requires:
+    - taskId:         identifies the task to move
+    - targetMachineId: identifies the destination machine
+  These are provided as parameters and matched against the model.
+
+  A NAC ensures the task is not already on the target machine (prevents no-op moves).
+-->
+<henshin:Module xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin"
+    xmi:id="_sched_module" name="Schedule">
+
+  <imports href="http://momot.big.tuwien.ac.at/schedule/1.0#/"/>
+
+  <!-- ================================================================
+       Rule: reassignTask
+       Changes task.assignedTo from currentMachine to targetMachine.
+       Parameters:
+         taskId         – id of the task to reassign
+         targetMachineId – id of the machine to assign the task to
+       NAC: prevents reassigning to the machine the task is already on.
+       ================================================================ -->
+  <units xsi:type="henshin:Rule" xmi:id="_r_reassign" name="reassignTask">
+
+    <parameters xmi:id="_p_taskId"   name="taskId">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+    <parameters xmi:id="_p_targetId" name="targetMachineId">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+
+    <!-- LHS: find Schedule, task (with current assignment), target machine -->
+    <lhs xmi:id="_lhs_ra" name="Lhs">
+      <!-- Schedule root -->
+      <nodes xmi:id="_lhs_sched"
+          outgoing="_lhs_e_sched_task _lhs_e_sched_src _lhs_e_sched_tgt">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Schedule"/>
+      </nodes>
+      <!-- Task to reassign -->
+      <nodes xmi:id="_lhs_task"
+          incoming="_lhs_e_sched_task"
+          outgoing="_lhs_e_task_src">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Task"/>
+        <attributes xmi:id="_lhs_task_id" value="taskId">
+          <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Task/id"/>
+        </attributes>
+      </nodes>
+      <!-- Current (source) machine -->
+      <nodes xmi:id="_lhs_src"
+          incoming="_lhs_e_sched_src _lhs_e_task_src">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Machine"/>
+      </nodes>
+      <!-- Target machine -->
+      <nodes xmi:id="_lhs_tgt"
+          incoming="_lhs_e_sched_tgt">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Machine"/>
+        <attributes xmi:id="_lhs_tgt_id" value="targetMachineId">
+          <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Machine/id"/>
+        </attributes>
+      </nodes>
+      <!-- Edges -->
+      <edges xmi:id="_lhs_e_sched_task"
+          source="_lhs_sched" target="_lhs_task">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Schedule/tasks"/>
+      </edges>
+      <edges xmi:id="_lhs_e_sched_src"
+          source="_lhs_sched" target="_lhs_src">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Schedule/machines"/>
+      </edges>
+      <edges xmi:id="_lhs_e_sched_tgt"
+          source="_lhs_sched" target="_lhs_tgt">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Schedule/machines"/>
+      </edges>
+      <!-- task.assignedTo = currentMachine (will be changed in RHS) -->
+      <edges xmi:id="_lhs_e_task_src"
+          source="_lhs_task" target="_lhs_src">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Task/assignedTo"/>
+      </edges>
+      <!-- NAC: task must not already be assigned to targetMachine -->
+      <formula xsi:type="henshin:Not" xmi:id="_nac_ra">
+        <child xsi:type="henshin:NestedCondition" xmi:id="_nac_ra_cond">
+          <conclusion xmi:id="_nac_ra_conc">
+            <nodes xmi:id="_nac_task2"
+                outgoing="_nac_e_task_tgt">
+              <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Task"/>
+            </nodes>
+            <nodes xmi:id="_nac_tgt2"
+                incoming="_nac_e_task_tgt">
+              <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Machine"/>
+            </nodes>
+            <edges xmi:id="_nac_e_task_tgt"
+                source="_nac_task2" target="_nac_tgt2">
+              <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Task/assignedTo"/>
+            </edges>
+          </conclusion>
+          <mappings xmi:id="_nac_map_task" origin="_lhs_task" image="_nac_task2"/>
+          <mappings xmi:id="_nac_map_tgt"  origin="_lhs_tgt"  image="_nac_tgt2"/>
+        </child>
+      </formula>
+    </lhs>
+
+    <!-- RHS: same structure but task.assignedTo now points to targetMachine -->
+    <rhs xmi:id="_rhs_ra" name="Rhs">
+      <!-- Schedule root (preserved) -->
+      <nodes xmi:id="_rhs_sched"
+          outgoing="_rhs_e_sched_task _rhs_e_sched_src _rhs_e_sched_tgt">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Schedule"/>
+      </nodes>
+      <!-- Task (preserved, assignedTo updated) -->
+      <nodes xmi:id="_rhs_task"
+          incoming="_rhs_e_sched_task"
+          outgoing="_rhs_e_task_tgt">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Task"/>
+        <attributes xmi:id="_rhs_task_id" value="taskId">
+          <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Task/id"/>
+        </attributes>
+      </nodes>
+      <!-- Source machine (preserved, task no longer assigned here) -->
+      <nodes xmi:id="_rhs_src"
+          incoming="_rhs_e_sched_src">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Machine"/>
+      </nodes>
+      <!-- Target machine (preserved, task now assigned here) -->
+      <nodes xmi:id="_rhs_tgt"
+          incoming="_rhs_e_sched_tgt _rhs_e_task_tgt">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Machine"/>
+        <attributes xmi:id="_rhs_tgt_id" value="targetMachineId">
+          <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Machine/id"/>
+        </attributes>
+      </nodes>
+      <!-- Edges -->
+      <edges xmi:id="_rhs_e_sched_task"
+          source="_rhs_sched" target="_rhs_task">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Schedule/tasks"/>
+      </edges>
+      <edges xmi:id="_rhs_e_sched_src"
+          source="_rhs_sched" target="_rhs_src">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Schedule/machines"/>
+      </edges>
+      <edges xmi:id="_rhs_e_sched_tgt"
+          source="_rhs_sched" target="_rhs_tgt">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Schedule/machines"/>
+      </edges>
+      <!-- task.assignedTo now = targetMachine (new edge) -->
+      <edges xmi:id="_rhs_e_task_tgt"
+          source="_rhs_task" target="_rhs_tgt">
+        <type href="http://momot.big.tuwien.ac.at/schedule/1.0#//Task/assignedTo"/>
+      </edges>
+    </rhs>
+
+    <!-- Mappings: all four objects preserved -->
+    <mappings xmi:id="_map_sched" origin="_lhs_sched" image="_rhs_sched"/>
+    <mappings xmi:id="_map_task"  origin="_lhs_task"  image="_rhs_task"/>
+    <mappings xmi:id="_map_src"   origin="_lhs_src"   image="_rhs_src"/>
+    <mappings xmi:id="_map_tgt"   origin="_lhs_tgt"   image="_rhs_tgt"/>
+  </units>
+
+</henshin:Module>

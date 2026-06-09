@@ -1,0 +1,43 @@
+{
+  "problem": "T04 Task-Machine Scheduling",
+  "description": "4 tasks (durations 4,3,2,1) initially all on M1. Minimise Makespan and SolutionLength across 3 machines.",
+  "objectives": [
+    { "name": "Makespan",       "direction": "minimize", "unit": "time units" },
+    { "name": "SolutionLength", "direction": "minimize", "unit": "rule applications" }
+  ],
+  "ideal_point":  { "Makespan": 4,  "SolutionLength": 0 },
+  "nadir_point":  { "Makespan": 10, "SolutionLength": 4 },
+  "reference_front": [
+    {
+      "Makespan": 4,
+      "SolutionLength": 2,
+      "assignment": "M1={T3,T4}=3  M2={T1}=4  M3={T2}=3",
+      "moves": ["T1 → M2", "T2 → M3"],
+      "notes": "Optimal makespan=4. T1 (longest) placed alone on M2; T2 and T3+T4 balance across M1 and M3. Lower bound: makespan ≥ max(duration) = 4."
+    },
+    {
+      "Makespan": 6,
+      "SolutionLength": 1,
+      "assignment": "M1={T2,T3,T4}=6  M2={T1}=4  M3={}",
+      "moves": ["T1 → M2"],
+      "notes": "Best single reassignment. Moving T1 (the heaviest task) to M2 reduces makespan from 10 to 6."
+    },
+    {
+      "Makespan": 10,
+      "SolutionLength": 0,
+      "assignment": "M1={T1,T2,T3,T4}=10  M2={}  M3={}",
+      "moves": [],
+      "notes": "Initial state, no transformations applied."
+    }
+  ],
+  "derivation": "analytical_exact",
+  "state_space_size": 81,
+  "state_space_note": "3^4 = 81 possible assignments; front verified by exhaustive enumeration.",
+  "solutionLength": 4,
+  "makespan_lower_bound": 4,
+  "makespan_lower_bound_proof": "Task T1 has duration=4 and must be assigned to some machine, so that machine's load ≥ 4. Hence Makespan ≥ 4 for all possible assignments.",
+  "validation": {
+    "method": "exact dominance check",
+    "pass_condition": "The found front must contain solutions (Makespan=4,SL≤2) and (Makespan=10,SL=0), or strictly better. No found solution should be dominated by a reference_front point."
+  }
+}

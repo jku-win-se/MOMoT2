@@ -1,0 +1,111 @@
+package at.ac.tuwien.big.momot.examples.tree.momot
+
+import at.ac.tuwien.big.momot.problem.unit.parameter.random.RandomListValue
+import at.ac.tuwien.big.momot.problem.unit.parameter.random.RandomIntegerValue
+import at.ac.tuwien.big.momot.^search.^fitness.dimension.TransformationLengthDimension
+import at.ac.tuwien.big.momot.^search.solution.repair.TransformationPlaceholderRepairer
+import org.moeaframework.core.operator.TournamentSelection
+import org.moeaframework.core.operator.OnePointCrossover
+import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationPlaceholderMutation
+import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationParameterMutation
+import at.ac.tuwien.big.moea.^experiment.executor.listener.SeedRuntimePrintListener
+
+search = {
+   model = {
+      file = "model/input/model_skewed_tree.xmi"
+   }
+   solutionLength = 5
+
+   transformations = {
+      modules = [ "model/tree.henshin" ]
+      parameterValues = {
+         // nodeName: any non-root node is a candidate for reparenting
+         "Tree::reparentNode::nodeName"       : new RandomListValue(#["A", "B", "C", "D", "E", "F"])
+         // newParentName: any node (including root) can become the new parent
+         "Tree::reparentNode::newParentName"  : new RandomListValue(#["root", "A", "B", "C", "D", "E", "F"])
+         // newParentDepth must match the actual depth of newParentName in the model;
+         // in practice this parameter is bound by Henshin's pattern matching and
+         // does not need to be listed as a random value — it is matched from the model.
+         "Tree::reparentNode::newParentDepth" : new RandomIntegerValue(0, 5)
+      }
+      ignoreParameters = [
+         "Tree::reparentNode::newParentDepth"
+      ]
+   }
+
+   fitness = {
+      objectives = {
+         // MaxDepth: maximum depth value across all nodes in the tree after transformation.
+         // The reparentNode rule updates only the moved node's depth attribute.
+         // A complete traversal-based fitness implementation would compute true MaxDepth.
+         MaxDepth       : minimize "nodes.depth->max()"
+         SolutionLength : minimize new TransformationLengthDimension
+      }
+      solutionRepairer = new TransformationPlaceholderRepairer
+   }
+
+   algorithms = {
+      Random  : moea.createRandomSearch()
+      NSGA_II : moea.createNSGAII(
+                  new TournamentSelection(2),
+                  new OnePointCrossover(1.0),
+                  new TransformationPlaceholderMutation(0.15),
+                  new TransformationParameterMutation(0.1, orchestration.moduleManager))
+      NSGA_III: moea.createNSGAIII(
+                  4,
+                  new TournamentSelection(2),
+                  new OnePointCrossover(1.0),
+                  new TransformationPlaceholderMutation(0.15),
+                  new TransformationParameterMutation(0.1, orchestration.moduleManager))
+   }
+}
+
+experiment = {
+   populationSize    = 100
+   maxEvaluations    = 2000
+   nrRuns            = 5
+   progressListeners = [ new SeedRuntimePrintListener ]
+}
+
+analysis = {
+   indicators        = [ hypervolume additiveEpsilonIndicator maximumParetoFrontError ]
+   show              = [ individualValues aggregateValues statisticalSignificance ]
+   significance      = 0.01
+   outputFile        = "out/analysis/analysis.txt"
+   boxplotDirectory  = "out/analysis/boxplot/"
+   printOutput
+}
+
+results = {
+   objectives = {
+      outputFile  = "out/objectives/overall_objectives.pf"
+      printOutput
+   }
+
+   objectives = {
+      algorithms = [ NSGA_III, NSGA_II ]
+      outputFile  = "out/objectives/moea_objectives.pf"
+      printOutput
+   }
+
+   solutions = {
+      outputFile      = "out/solutions/overall_solutions.txt"
+      outputDirectory = "out/solutions/all/"
+   }
+
+   solutions = {
+      algorithms      = [ NSGA_III, NSGA_II ]
+      outputFile      = "out/solutions/moea_solutions.txt"
+      outputDirectory = "out/solutions/moea/"
+   }
+
+   models = {
+      outputDirectory = "out/models/all/"
+      printOutput
+   }
+
+   models = {
+      algorithms      = [ NSGA_III, NSGA_II ]
+      outputDirectory = "out/models/moea/"
+   }
+}

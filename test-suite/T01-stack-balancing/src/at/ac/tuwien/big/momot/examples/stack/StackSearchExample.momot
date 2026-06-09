@@ -1,0 +1,133 @@
+package at.ac.tuwien.big.momot.examples.stack.momot
+
+import at.ac.tuwien.big.momot.problem.unit.parameter.random.RandomIntegerValue
+import at.ac.tuwien.big.momot.^search.^fitness.dimension.TransformationLengthDimension
+import at.ac.tuwien.big.momot.^search.solution.repair.TransformationPlaceholderRepairer
+import org.moeaframework.core.operator.TournamentSelection
+import org.moeaframework.core.operator.OnePointCrossover
+import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationPlaceholderMutation
+import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationParameterMutation
+import at.ac.tuwien.big.moea.^experiment.executor.listener.SeedRuntimePrintListener
+
+search = {
+   model          = {
+      file = "model/input/model/model_five_stacks.xmi"
+   }
+   solutionLength = 8
+   
+   transformations = {
+      modules = [ "model/stack.henshin" ] 
+      ignoreUnits = [ 
+         "stack::Stack::createStack",
+         "stack::Stack::connectStacks"
+      ]
+      ignoreParameters = [
+         "stack::Stack::shiftLeft::fromLoad",
+         "stack::Stack::shiftLeft::toLoad",
+         "stack::Stack::shiftRight::fromLoad",
+         "stack::Stack::shiftRight::toLoad"
+      ]      
+      parameterValues = {
+         "stack::Stack::shiftLeft::amount"  : new RandomIntegerValue(1, 5) 
+         "stack::Stack::shiftRight::amount" : new RandomIntegerValue(1, 5) 
+      }
+   }
+   
+   fitness = {
+      objectives = {
+           LoadRange         : minimize "stacks.load->max() - stacks.load->min()"
+          SolutionLength    : minimize new TransformationLengthDimension
+      }
+      solutionRepairer = new TransformationPlaceholderRepairer
+   }
+   
+   algorithms = {
+      Random   : moea.createRandomSearch()
+      NSGA_II   : moea.createNSGAII(
+                  new TournamentSelection(2),
+                  new OnePointCrossover(1.0), 
+                  new TransformationPlaceholderMutation(0.15),
+                  new TransformationParameterMutation(0.1, orchestration.moduleManager))
+      NSGA_III   : moea.createNSGAIII(
+                  4,
+                  new TournamentSelection(2),
+                  new OnePointCrossover(1.0), 
+                  new TransformationPlaceholderMutation(0.15),
+                  new TransformationParameterMutation(0.1, orchestration.moduleManager))
+   }   
+}
+
+experiment = {
+   populationSize    = 100
+   maxEvaluations    = 2000
+   nrRuns             = 5
+   progressListeners = [ new SeedRuntimePrintListener ]
+}
+   
+analysis = {
+   indicators        = [ hypervolume additiveEpsilonIndicator maximumParetoFrontError  ]
+   show               = [ individualValues aggregateValues statisticalSignificance ]
+   significance     = 0.01
+   outputFile       = "out/analysis/analysis.txt"
+   boxplotDirectory = "out/analysis/boxplot/"
+   printOutput
+}
+   
+results = {   
+   objectives = {
+      printOutput
+   }
+   
+   objectives = {
+      outputFile = "out/objectives/overall_objectives.pf"
+      printOutput
+   }
+   
+   objectives = {
+      algorithms = [ NSGA_III, NSGA_II ]
+      outputFile = "out/objectives/moea_objectives.pf"
+      printOutput
+   }
+   
+   objectives = {
+      algorithms = [ NSGA_III, NSGA_II ]
+      neighborhoodSize = 3
+      outputFile = "out/objectives/moea_kneepoints_objectives.pf"
+      printOutput
+   }
+   
+   solutions = {
+      outputFile = "out/solutions/overall_solutions.txt"
+      outputDirectory ="out/solutions/all/"
+   }
+   
+   solutions = {
+      algorithms = [ NSGA_III, NSGA_II ]
+      outputFile = "out/solutions/moea_solutions.txt"
+      outputDirectory ="out/solutions/moea/"
+   }
+   
+   solutions = {
+      algorithms = [ NSGA_III, NSGA_II ]
+      neighborhoodSize = maxNeighborhoodSize
+      outputFile = "out/solutions/moea_kneepoint_solutions.txt"
+      outputDirectory ="out/solutions/moea/kneepoints/"
+      printOutput
+   }
+   
+   models = {
+      outputDirectory = "out/models/all/"
+      printOutput
+   }
+   
+   models = {
+      algorithms = [ NSGA_III, NSGA_II ]
+      outputDirectory = "out/models/moea/"
+   }
+   
+   models = {
+      algorithms = [ Random ]
+      outputDirectory = "out/models/random/"
+   }
+}   
+

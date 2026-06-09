@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<henshin:Module xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin"
+    name="MinimalCreate">
+
+  <!-- Bind to the target metamodel by its nsURI -->
+  <imports href="http://example.org/mymodel/1.0#/"/>
+
+  <!--
+    Smallest valid create rule.
+    LHS is empty (no match required) — the rule always applies.
+    RHS creates one new SomeClass node.
+    No mappings needed: the new node has no LHS counterpart.
+  -->
+  <units xsi:type="henshin:Rule" name="createNode">
+    <parameters name="label" kind="IN">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+    <lhs name="Lhs"/>
+    <rhs name="Rhs">
+      <nodes name="newNode" type="http://example.org/mymodel/1.0#//SomeClass">
+        <attributes value="label">
+          <type href="http://example.org/mymodel/1.0#//SomeClass/name"/>
+        </attributes>
+      </nodes>
+    </rhs>
+    <!-- No <mappings> element: newNode is created fresh, not preserved from LHS -->
+  </units>
+
+</henshin:Module>

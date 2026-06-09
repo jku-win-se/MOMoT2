@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    name="cra"
+    nsURI="http://momot.big.tuwien.ac.at/cra/1.0"
+    nsPrefix="cra">
+
+  <!-- Root container -->
+  <eClassifiers xsi:type="ecore:EClass" name="ClassModel">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="classes"
+        upperBound="-1" eType="#//Class" containment="true"/>
+  </eClassifiers>
+
+  <!-- Abstract base for named elements -->
+  <eClassifiers xsi:type="ecore:EClass" name="NamedElement" abstract="true">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+
+  <!-- Class: owns features via containment so features move between classes -->
+  <eClassifiers xsi:type="ecore:EClass" name="Class" eSuperTypes="#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="encapsulates"
+        upperBound="-1" eType="#//Feature" containment="true"
+        eOpposite="#//Feature/isEncapsulatedBy"/>
+  </eClassifiers>
+
+  <!-- Abstract Feature; isEncapsulatedBy is the opposite of Class.encapsulates -->
+  <eClassifiers xsi:type="ecore:EClass" name="Feature" abstract="true" eSuperTypes="#//NamedElement">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="isEncapsulatedBy"
+        eType="#//Class" transient="true" derived="true"
+        eOpposite="#//Class/encapsulates"/>
+  </eClassifiers>
+
+  <!-- Method: can depend on other methods and on attributes -->
+  <eClassifiers xsi:type="ecore:EClass" name="Method" eSuperTypes="#//Feature">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="functionalDependency"
+        upperBound="-1" eType="#//Method"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="dataDependency"
+        upperBound="-1" eType="#//Attribute"/>
+  </eClassifiers>
+
+  <!-- Attribute: pure data element, no additional structural features -->
+  <eClassifiers xsi:type="ecore:EClass" name="Attribute" eSuperTypes="#//Feature"/>
+
+</ecore:EPackage>

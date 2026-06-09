@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="ASCII"?>
+<!--
+  T02 CRA small instance.
+
+  Initial assignment: ALL features are in C1 (one big class).
+  C2 exists but is empty — the search must redistribute features.
+
+  Dependency graph:
+    m1 -dataDep-> a1
+    m2 -dataDep-> a1, a2
+    m3 -dataDep-> a2
+
+  Optimal 2-class assignment (CRA-Index = 1.5):
+    Option A: C1 = {m1, m2, a1}  /  C2 = {m3, a2}
+    Option B: C1 = {m1, a1}      /  C2 = {m2, m3, a2}
+-->
+<cra:ClassModel xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:cra="http://momot.big.tuwien.ac.at/cra/1.0"
+    xsi:schemaLocation="http://momot.big.tuwien.ac.at/cra/1.0 ../cra.ecore">
+  <classes name="C1">
+    <encapsulates xsi:type="cra:Method"    xmi:id="m1" name="m1" dataDependency="#a1"/>
+    <encapsulates xsi:type="cra:Method"    xmi:id="m2" name="m2" dataDependency="#a1 #a2"/>
+    <encapsulates xsi:type="cra:Method"    xmi:id="m3" name="m3" dataDependency="#a2"/>
+    <encapsulates xsi:type="cra:Attribute" xmi:id="a1" name="a1"/>
+    <encapsulates xsi:type="cra:Attribute" xmi:id="a2" name="a2"/>
+  </classes>
+  <classes name="C2"/>
+</cra:ClassModel>

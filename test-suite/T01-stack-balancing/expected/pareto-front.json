@@ -1,0 +1,45 @@
+{
+  "problem": "T01 Stack Load Balancing",
+  "description": "Five stacks in a ring with loads [1,7,3,9,5]. Minimise load range and solution length.",
+  "objectives": [
+    { "name": "LoadRange",      "direction": "minimize", "unit": "load units" },
+    { "name": "SolutionLength", "direction": "minimize", "unit": "rule applications" }
+  ],
+  "ideal_point":  { "LoadRange": 0, "SolutionLength": 0 },
+  "nadir_point":  { "LoadRange": 8, "SolutionLength": 8 },
+  "reference_front": [
+    {
+      "LoadRange": 0,
+      "SolutionLength": 4,
+      "notes": "Fully balanced (all stacks = 5). Minimum 4 adjacent shifts needed: Stack4→Stack3(2), Stack4→Stack5(2), Stack5→Stack1(2), Stack2→Stack1(2)."
+    },
+    {
+      "LoadRange": 2,
+      "SolutionLength": 3,
+      "notes": "Example: after 3 shifts achieving loads [3,5,5,7,5] or similar near-balanced distribution."
+    },
+    {
+      "LoadRange": 4,
+      "SolutionLength": 2,
+      "notes": "Example: after 2 shifts, e.g. Stack4→Stack3(2) and Stack2→Stack1(2) → [3,5,5,7,5]."
+    },
+    {
+      "LoadRange": 6,
+      "SolutionLength": 1,
+      "notes": "Best single shift: move 2 from Stack4 to Stack3 → [1,7,5,7,5], LoadRange=6."
+    },
+    {
+      "LoadRange": 8,
+      "SolutionLength": 0,
+      "notes": "Initial state, no transformations applied."
+    }
+  ],
+  "derivation": "analytical",
+  "solutionLength": 8,
+  "validation": {
+    "method": "hypervolume",
+    "reference_point": { "LoadRange": 10, "SolutionLength": 10 },
+    "pass_condition": "Algorithm-found front must not be dominated by the reference_front (epsilon-dominance ≤ 1 load unit)"
+  },
+  "notes": "Reference front points are non-dominated upper bounds derived by hand for the 5-stack ring topology. Stochastic runs may find equally good or better points."
+}

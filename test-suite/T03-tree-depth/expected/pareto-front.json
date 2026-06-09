@@ -1,0 +1,43 @@
+{
+  "problem": "T03 Tree Depth Reduction",
+  "description": "7-node skewed chain tree. Minimise MaxDepth and SolutionLength via node reparenting.",
+  "objectives": [
+    { "name": "MaxDepth",       "direction": "minimize", "unit": "tree levels" },
+    { "name": "SolutionLength", "direction": "minimize", "unit": "rule applications" }
+  ],
+  "ideal_point":  { "MaxDepth": 1, "SolutionLength": 0 },
+  "nadir_point":  { "MaxDepth": 5, "SolutionLength": 5 },
+  "reference_front": [
+    {
+      "MaxDepth": 1,
+      "SolutionLength": 3,
+      "moves": ["reparent D → root", "reparent C → root", "reparent B → root"],
+      "notes": "Star topology: A,B,C,D,E,F all directly under root at depth=1. Minimum moves to reach depth=1."
+    },
+    {
+      "MaxDepth": 2,
+      "SolutionLength": 2,
+      "moves": ["reparent D → root", "reparent C → root"],
+      "notes": "After 2 moves: root→A→B (depth 2), root→C,D,E,F (depth 1). MaxDepth=2."
+    },
+    {
+      "MaxDepth": 3,
+      "SolutionLength": 1,
+      "moves": ["reparent D → root"],
+      "notes": "After 1 move: root→A→B→C (depth 3), root→D,F (depth 1), root→D→E (depth 2). MaxDepth=3."
+    },
+    {
+      "MaxDepth": 5,
+      "SolutionLength": 0,
+      "moves": [],
+      "notes": "Initial state, no transformations applied."
+    }
+  ],
+  "derivation": "analytical",
+  "solutionLength": 5,
+  "validation": {
+    "method": "exact dominance check",
+    "pass_condition": "The found front must include solutions corresponding to (MaxDepth=1,SL=3), (MaxDepth=3,SL=1), and (MaxDepth=5,SL=0) or strictly better on both objectives."
+  },
+  "notes": "Moving nodes to an intermediate ancestor (not root) can achieve the same or better MaxDepth in the same number of moves. The reference front lists the canonical root-attachment strategy; equivalent fronts are also acceptable."
+}

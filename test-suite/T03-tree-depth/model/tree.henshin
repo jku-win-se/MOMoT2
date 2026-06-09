@@ -1,0 +1,161 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  T03 Tree Depth Henshin module.
+
+  Rules:
+    reparentNode – moves a node from its current parent to a new parent,
+                   updating the moved node's depth attribute.
+
+  NAC on reparentNode prevents:
+    - A node from being moved to itself
+    - The root node (depth=0) from being moved (it has no parent to detach from)
+
+  Note: only the moved node's depth is updated. If the node has children,
+  their depths become stale; the fitness function should traverse the tree to
+  compute the true MaxDepth. A sequential Henshin unit could propagate depth
+  changes to descendants, but that complexity is out of scope for this test.
+-->
+<henshin:Module xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin"
+    xmi:id="_tree_module" name="Tree">
+
+  <imports href="http://momot.big.tuwien.ac.at/tree/1.0#/"/>
+
+  <!-- ================================================================
+       Rule: reparentNode
+       Moves nodeToMove from its current parent (oldParent) to newParent.
+       Updates nodeToMove.depth = newParent.depth + 1.
+       Parameters:
+         nodeName      – name of the node to move
+         newParentName – name of the desired new parent node
+       ================================================================ -->
+  <units xsi:type="henshin:Rule" xmi:id="_r_reparent" name="reparentNode">
+
+    <parameters xmi:id="_p_nodeName"      name="nodeName">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+    <parameters xmi:id="_p_newParentName" name="newParentName">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+    <parameters xmi:id="_p_newParentDepth" name="newParentDepth">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    </parameters>
+
+    <!-- LHS ========================================================= -->
+    <lhs xmi:id="_lhs_rp" name="Lhs">
+      <!-- Tree container -->
+      <nodes xmi:id="_lhs_tree"
+          outgoing="_lhs_e_tree_node _lhs_e_tree_old _lhs_e_tree_new">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Tree"/>
+      </nodes>
+      <!-- Node to move -->
+      <nodes xmi:id="_lhs_node"
+          incoming="_lhs_e_tree_node _lhs_e_old_node">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node"/>
+        <attributes xmi:id="_lhs_node_name" value="nodeName">
+          <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/name"/>
+        </attributes>
+      </nodes>
+      <!-- Current (old) parent -->
+      <nodes xmi:id="_lhs_old"
+          incoming="_lhs_e_tree_old"
+          outgoing="_lhs_e_old_node">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node"/>
+      </nodes>
+      <!-- New parent -->
+      <nodes xmi:id="_lhs_new"
+          incoming="_lhs_e_tree_new">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node"/>
+        <attributes xmi:id="_lhs_new_name" value="newParentName">
+          <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/name"/>
+        </attributes>
+        <attributes xmi:id="_lhs_new_depth" value="newParentDepth">
+          <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/depth"/>
+        </attributes>
+      </nodes>
+      <!-- Edges -->
+      <edges xmi:id="_lhs_e_tree_node"
+          source="_lhs_tree" target="_lhs_node">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Tree/nodes"/>
+      </edges>
+      <edges xmi:id="_lhs_e_tree_old"
+          source="_lhs_tree" target="_lhs_old">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Tree/nodes"/>
+      </edges>
+      <edges xmi:id="_lhs_e_tree_new"
+          source="_lhs_tree" target="_lhs_new">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Tree/nodes"/>
+      </edges>
+      <!-- Parent→node edge (will be deleted in RHS) -->
+      <edges xmi:id="_lhs_e_old_node"
+          source="_lhs_old" target="_lhs_node">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/children"/>
+      </edges>
+    </lhs>
+
+    <!-- RHS ========================================================= -->
+    <rhs xmi:id="_rhs_rp" name="Rhs">
+      <!-- Tree container (preserved) -->
+      <nodes xmi:id="_rhs_tree"
+          outgoing="_rhs_e_tree_node _rhs_e_tree_old _rhs_e_tree_new">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Tree"/>
+      </nodes>
+      <!-- Node to move (preserved; depth updated to newParentDepth+1) -->
+      <nodes xmi:id="_rhs_node"
+          incoming="_rhs_e_tree_node _rhs_e_new_node">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node"/>
+        <attributes xmi:id="_rhs_node_name" value="nodeName">
+          <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/name"/>
+        </attributes>
+        <attributes xmi:id="_rhs_node_depth" value="newParentDepth+1">
+          <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/depth"/>
+        </attributes>
+      </nodes>
+      <!-- Old parent (preserved, no longer parent of node) -->
+      <nodes xmi:id="_rhs_old"
+          incoming="_rhs_e_tree_old">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node"/>
+      </nodes>
+      <!-- New parent (preserved, now parent of node) -->
+      <nodes xmi:id="_rhs_new"
+          incoming="_rhs_e_tree_new"
+          outgoing="_rhs_e_new_node">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node"/>
+        <attributes xmi:id="_rhs_new_name" value="newParentName">
+          <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/name"/>
+        </attributes>
+        <attributes xmi:id="_rhs_new_depth" value="newParentDepth">
+          <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/depth"/>
+        </attributes>
+      </nodes>
+      <!-- Preserved edges -->
+      <edges xmi:id="_rhs_e_tree_node"
+          source="_rhs_tree" target="_rhs_node">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Tree/nodes"/>
+      </edges>
+      <edges xmi:id="_rhs_e_tree_old"
+          source="_rhs_tree" target="_rhs_old">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Tree/nodes"/>
+      </edges>
+      <edges xmi:id="_rhs_e_tree_new"
+          source="_rhs_tree" target="_rhs_new">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Tree/nodes"/>
+      </edges>
+      <!-- New parent→node edge (created) -->
+      <edges xmi:id="_rhs_e_new_node"
+          source="_rhs_new" target="_rhs_node">
+        <type href="http://momot.big.tuwien.ac.at/tree/1.0#//Node/children"/>
+      </edges>
+    </rhs>
+
+    <!-- Mappings: all four objects are preserved across the rule -->
+    <mappings xmi:id="_map_tree" origin="_lhs_tree" image="_rhs_tree"/>
+    <mappings xmi:id="_map_node" origin="_lhs_node" image="_rhs_node"/>
+    <mappings xmi:id="_map_old"  origin="_lhs_old"  image="_rhs_old"/>
+    <mappings xmi:id="_map_new"  origin="_lhs_new"  image="_rhs_new"/>
+  </units>
+
+</henshin:Module>

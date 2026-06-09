@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import crypto from 'node:crypto';
+import { spawn } from 'node:child_process';
 import { setTimeout as delay } from 'node:timers/promises';
 import { fileURLToPath } from 'node:url';
 import JSZip from 'jszip';
@@ -361,19 +362,38 @@ function buildMomotScript({ packageName, modelPath, henshinPath, objectiveText }
 
 function buildHenshinModule(modelInfo) {
   const nsURI = modelInfo.nsURI || 'http://generated/1.0';
-  const className = modelInfo.classNames[0] || 'Root';
+  const classNames = modelInfo.classNames || ['Root'];
+  const firstClass = classNames[0] || 'Root';
 
-  return [
+  const lines = [
     '<?xml version="1.0" encoding="UTF-8"?>',
     '<henshin:Module xmi:version="2.0" xmlns:xmi="http://www.omg.org/XMI" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin" name="Generated">',
-    `  <imports href="${escapeXml(nsURI)}#/"/>`,
-    `  <units xsi:type="henshin:Rule" name="noop_${escapeXml(className)}">`,
-    '    <lhs/>',
-    '    <rhs/>',
-    '  </units>',
-    '</henshin:Module>',
-    ''
-  ].join('\n');
+    `  <imports href="${escapeXml(nsURI)}#/"/>`
+  ];
+
+  // Add a "Create" rule for each class (up to 3)
+  classNames.slice(0, 3).forEach((className) => {
+    lines.push(`  <units xsi:type="henshin:Rule" name="create_${escapeXml(className)}">`);
+    lines.push('    <lhs/>');
+    lines.push('    <rhs>');
+    lines.push(`      <nodes name="newNode" type="${escapeXml(nsURI)}#//${escapeXml(className)}"/>`);
+    lines.push('    </rhs>');
+    lines.push('  </units>');
+  });
+
+  // Add a "Delete" rule for the first class
+  if (classNames.length > 0) {
+    lines.push(`  <units xsi:type="henshin:Rule" name="delete_${escapeXml(firstClass)}">`);
+    lines.push('    <lhs>');
+    lines.push(`      <nodes name="toDelete" type="${escapeXml(nsURI)}#//${escapeXml(firstClass)}"/>`);
+    lines.push('    </lhs>');
+    lines.push('    <rhs/>');
+    lines.push('  </units>');
+  }
+
+  lines.push('</henshin:Module>');
+  lines.push('');
+  return lines.join('\n');
 }
 
 function buildJavaHelper({ packageName, className, objectiveText }) {
@@ -548,6 +568,62 @@ function sanitizeJavaIdentifier(value) {
   const raw = String(value || 'Generated').replace(/[^A-Za-z0-9_]/g, '_');
   const first = /^[A-Za-z_]/.test(raw) ? raw : `_${raw}`;
   return first.length > 0 ? first : 'Generated';
+}
+
+/**
+ * Validate a Henshin file using the local CLI validator (no Docker required).
+ *
+ * Modes:
+ *   structure — XMI parse + Henshin meta-conformance check; no metamodel needed.
+ *   semantic  — type reference resolution against the provided Ecore metamodel.
+ *   apply     — execute a named rule against a model instance.
+ *
+ * All paths must be absolute or relative to the current working directory of the process.
+ */
+export async function validateHenshin({ henshinPath, mode = 'structure', metamodelPath, modelPath, ruleName, parameters = {} }) {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const validatorScript = path.join(repoRoot, 'tools', 'henshin-validator', 'validate.mjs');
+
+  if (!fs.existsSync(validatorScript)) {
+    return { success: false, error: `Validator not found at ${validatorScript}. Run 'npm install && npm run setup' in tools/henshin-validator/.` };
+  }
+
+  const args = [];
+  if (mode === 'structure') {
+    args.push('--validate-structure', henshinPath);
+  } else if (mode === 'semantic') {
+    if (!metamodelPath) return { success: false, error: 'metamodelPath is required for mode=semantic.' };
+    args.push('--validate-semantic', henshinPath, '--metamodel', metamodelPath);
+  } else if (mode === 'apply') {
+    if (!metamodelPath) return { success: false, error: 'metamodelPath is required for mode=apply.' };
+    if (!modelPath)     return { success: false, error: 'modelPath is required for mode=apply.' };
+    if (!ruleName)      return { success: false, error: 'ruleName is required for mode=apply.' };
+    args.push('--apply', henshinPath, '--metamodel', metamodelPath, '--model', modelPath, '--rule', ruleName);
+    for (const [k, v] of Object.entries(parameters)) {
+      args.push(`-P${k}=${v}`);
+    }
+  } else {
+    return { success: false, error: `Unknown mode "${mode}". Use "structure", "semantic", or "apply".` };
+  }
+
+  return new Promise((resolve) => {
+    const proc = spawn('node', [validatorScript, ...args]);
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', (d) => { stdout += d; });
+    proc.stderr.on('data', (d) => { stderr += d; });
+    proc.on('close', (exitCode) => {
+      let result = null;
+      try { result = JSON.parse(stdout.trim()); } catch { result = { raw: stdout.trim() }; }
+      resolve({
+        success: exitCode === 0,
+        exitCode,
+        result,
+        ...(stderr.trim() ? { stderr: stderr.trim() } : {})
+      });
+    });
+    proc.on('error', (err) => resolve({ success: false, error: String(err) }));
+  });
 }
 
 export async function buildKnownGoodStackFixture() {

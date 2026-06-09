@@ -1,0 +1,36 @@
+{
+  "problem": "T02 Class-Responsibility Assignment (CRA)",
+  "description": "5 features, 2 classes. Minimise NegCRAIndex (= maximise CRA-Index) and SolutionLength.",
+  "objectives": [
+    { "name": "NegCRAIndex",    "direction": "minimize", "unit": "dimensionless (range: −∞ to 0 for sensible assignments)" },
+    { "name": "SolutionLength", "direction": "minimize", "unit": "rule applications" }
+  ],
+  "ideal_point":  { "NegCRAIndex": -1.5,   "SolutionLength": 0 },
+  "nadir_point":  { "NegCRAIndex":  0.0,   "SolutionLength": 6 },
+  "reference_front": [
+    {
+      "NegCRAIndex": -1.5,
+      "SolutionLength": 2,
+      "assignment": "C1={m1,m2,a1}  C2={m3,a2}",
+      "notes": "Optimal CRA=1.5 in minimum 2 moves. cohesion(C1)=1.0, cohesion(C2)=1.0, coupling(C1→C2)=0.5."
+    },
+    {
+      "NegCRAIndex": -0.667,
+      "SolutionLength": 0,
+      "assignment": "C1={m1,m2,m3,a1,a2}  C2={}",
+      "notes": "Initial state. cohesion(C1)=4/6≈0.667, no coupling. All 1-move neighbours are strictly worse."
+    }
+  ],
+  "derivation": "analytical",
+  "solutionLength": 6,
+  "cra_index_notes": {
+    "formula": "CRA = Σcohesion(Ci) − Σcoupling(Ci,Cj)",
+    "cohesion": "internalDataDeps / (|methods| × |attributes|)",
+    "coupling": "crossDataDeps(Ci→Cj) / (|Ci.methods| × |Cj.attributes|)"
+  },
+  "validation": {
+    "method": "exact dominance check",
+    "pass_condition": "The found front must contain at least one solution with NegCRAIndex ≤ -1.5 and SolutionLength ≤ 2, and at least one solution with NegCRAIndex ≤ -0.667 and SolutionLength = 0."
+  },
+  "notes": "The 1-move intermediate state C1={m1,m2,a1,a2} / C2={m3} gives CRA=0.25 which is dominated by the initial state. The reference front therefore has only 2 points."
+}

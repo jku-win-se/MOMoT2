@@ -1,0 +1,111 @@
+package at.ac.tuwien.big.momot.examples.cra.momot
+
+import at.ac.tuwien.big.momot.problem.unit.parameter.random.RandomListValue
+import at.ac.tuwien.big.momot.^search.^fitness.dimension.TransformationLengthDimension
+import at.ac.tuwien.big.momot.^search.solution.repair.TransformationPlaceholderRepairer
+import org.moeaframework.core.operator.TournamentSelection
+import org.moeaframework.core.operator.OnePointCrossover
+import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationPlaceholderMutation
+import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationParameterMutation
+import at.ac.tuwien.big.moea.^experiment.executor.listener.SeedRuntimePrintListener
+
+search = {
+   model = {
+      file = "model/input/model_cra_small.xmi"
+   }
+   solutionLength = 6
+
+   transformations = {
+      modules = [ "model/cra.henshin" ]
+      ignoreUnits = [
+         "CRA::createClass",
+         "CRA::deleteEmptyClass"
+      ]
+      parameterValues = {
+         "CRA::assignFeature::featureName"    : new RandomListValue(#["m1", "m2", "m3", "a1", "a2"])
+         "CRA::assignFeature::targetClassName": new RandomListValue(#["C1", "C2"])
+      }
+   }
+
+   fitness = {
+      objectives = {
+         // NegCRAIndex = coupling_sum - cohesion_sum  (minimising this maximises CRA-Index).
+         //
+         // cohesion(C)      = internalDataDeps / (|methods(C)| * |attrs(C)|)   -- 0 if either empty
+         // coupling(Ci, Cj) = crossDataDeps(Ci->Cj) / (|methods(Ci)| * |attrs(Cj)|) -- 0 if either empty
+         //
+         // OCL is evaluated from the ClassModel root.
+         // Part 1 (coupling_sum): for each ordered pair (ci, cj) where ci≠cj, sum normalised cross-class deps.
+         // Part 2 (cohesion_sum): for each class, sum normalised intra-class deps.
+         // Result: Part1 - Part2 = NegCRAIndex.
+          NegCRAIndex    : minimize "classes->collect(ci | classes->reject(cj | cj = ci)->collect(cj | if ci.encapsulates->select(f | f.oclIsKindOf(Method))->notEmpty() and cj.encapsulates->select(f | f.oclIsKindOf(Attribute))->notEmpty() then ci.encapsulates->select(f | f.oclIsKindOf(Method))->collect(f | f.oclAsType(Method))->collect(m | m.dataDependency->select(a | cj.encapsulates->includes(a))->size())->sum() * 1.0 / (ci.encapsulates->select(f | f.oclIsKindOf(Method))->size() * cj.encapsulates->select(f | f.oclIsKindOf(Attribute))->size()) else 0.0 endif)->sum())->sum() - classes->collect(c | if c.encapsulates->select(f | f.oclIsKindOf(Method))->notEmpty() and c.encapsulates->select(f | f.oclIsKindOf(Attribute))->notEmpty() then c.encapsulates->select(f | f.oclIsKindOf(Method))->collect(f | f.oclAsType(Method))->collect(m | m.dataDependency->select(a | c.encapsulates->includes(a))->size())->sum() * 1.0 / (c.encapsulates->select(f | f.oclIsKindOf(Method))->size() * c.encapsulates->select(f | f.oclIsKindOf(Attribute))->size()) else 0.0 endif)->sum()"
+         SolutionLength : minimize new TransformationLengthDimension
+      }
+      solutionRepairer = new TransformationPlaceholderRepairer
+   }
+
+   algorithms = {
+      Random  : moea.createRandomSearch()
+      NSGA_II : moea.createNSGAII(
+                  new TournamentSelection(2),
+                  new OnePointCrossover(1.0),
+                  new TransformationPlaceholderMutation(0.15),
+                  new TransformationParameterMutation(0.1, orchestration.moduleManager))
+      NSGA_III: moea.createNSGAIII(
+                  4,
+                  new TournamentSelection(2),
+                  new OnePointCrossover(1.0),
+                  new TransformationPlaceholderMutation(0.15),
+                  new TransformationParameterMutation(0.1, orchestration.moduleManager))
+   }
+}
+
+experiment = {
+   populationSize    = 100
+   maxEvaluations    = 2000
+   nrRuns            = 5
+   progressListeners = [ new SeedRuntimePrintListener ]
+}
+
+analysis = {
+   indicators        = [ hypervolume additiveEpsilonIndicator maximumParetoFrontError ]
+   show              = [ individualValues aggregateValues statisticalSignificance ]
+   significance      = 0.01
+   outputFile        = "out/analysis/analysis.txt"
+   boxplotDirectory  = "out/analysis/boxplot/"
+   printOutput
+}
+
+results = {
+   objectives = {
+      outputFile  = "out/objectives/overall_objectives.pf"
+      printOutput
+   }
+
+   objectives = {
+      algorithms = [ NSGA_III, NSGA_II ]
+      outputFile  = "out/objectives/moea_objectives.pf"
+      printOutput
+   }
+
+   solutions = {
+      outputFile      = "out/solutions/overall_solutions.txt"
+      outputDirectory = "out/solutions/all/"
+   }
+
+   solutions = {
+      algorithms      = [ NSGA_III, NSGA_II ]
+      outputFile      = "out/solutions/moea_solutions.txt"
+      outputDirectory = "out/solutions/moea/"
+   }
+
+   models = {
+      outputDirectory = "out/models/all/"
+      printOutput
+   }
+
+   models = {
+      algorithms      = [ NSGA_III, NSGA_II ]
+      outputDirectory = "out/models/moea/"
+   }
+}

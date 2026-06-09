@@ -1,0 +1,219 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  T02 CRA Henshin module.
+
+  Rules:
+    assignFeature  – moves a named Feature from its current Class to a target Class
+    createClass    – adds a new empty Class to the ClassModel
+    deleteEmptyClass – removes a Class that has no encapsulated features
+
+  The search uses only assignFeature; createClass and deleteEmptyClass are
+  listed for completeness and marked as ignoreUnits in the .momot script.
+-->
+<henshin:Module xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    xmlns:henshin="http://www.eclipse.org/emf/2011/Henshin"
+    xmi:id="_cra_module" name="CRA">
+
+  <imports href="http://momot.big.tuwien.ac.at/cra/1.0#/"/>
+
+  <!-- ================================================================
+       Rule: assignFeature
+       Moves feature (identified by featureName) from its current class
+       to the target class (identified by targetClassName).
+       ================================================================ -->
+  <units xsi:type="henshin:Rule" xmi:id="_r_assignFeature" name="assignFeature">
+
+    <!-- Parameters -->
+    <parameters xmi:id="_p_featureName"   name="featureName">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+    <parameters xmi:id="_p_targetClass"   name="targetClassName">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+
+    <!-- LHS: find ClassModel, sourceClass containing the feature, targetClass -->
+    <lhs xmi:id="_lhs_af" name="Lhs">
+      <!-- ClassModel root -->
+      <nodes xmi:id="_lhs_model"
+          outgoing="_lhs_e_model_src _lhs_e_model_tgt">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel"/>
+      </nodes>
+      <!-- Source class (currently owns the feature) -->
+      <nodes xmi:id="_lhs_src"
+          incoming="_lhs_e_model_src"
+          outgoing="_lhs_e_src_feat">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class"/>
+      </nodes>
+      <!-- Feature to move -->
+      <nodes xmi:id="_lhs_feat"
+          incoming="_lhs_e_src_feat">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Feature"/>
+        <attributes xmi:id="_lhs_feat_name" value="featureName">
+          <type href="http://momot.big.tuwien.ac.at/cra/1.0#//NamedElement/name"/>
+        </attributes>
+      </nodes>
+      <!-- Target class -->
+      <nodes xmi:id="_lhs_tgt"
+          incoming="_lhs_e_model_tgt">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class"/>
+        <attributes xmi:id="_lhs_tgt_name" value="targetClassName">
+          <type href="http://momot.big.tuwien.ac.at/cra/1.0#//NamedElement/name"/>
+        </attributes>
+      </nodes>
+      <!-- Edges -->
+      <edges xmi:id="_lhs_e_model_src"
+          source="_lhs_model" target="_lhs_src">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel/classes"/>
+      </edges>
+      <edges xmi:id="_lhs_e_model_tgt"
+          source="_lhs_model" target="_lhs_tgt">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel/classes"/>
+      </edges>
+      <edges xmi:id="_lhs_e_src_feat"
+          source="_lhs_src" target="_lhs_feat">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class/encapsulates"/>
+      </edges>
+    </lhs>
+
+    <!-- RHS: feature is now contained by targetClass instead of sourceClass -->
+    <rhs xmi:id="_rhs_af" name="Rhs">
+      <!-- ClassModel root (preserved) -->
+      <nodes xmi:id="_rhs_model"
+          outgoing="_rhs_e_model_src _rhs_e_model_tgt">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel"/>
+      </nodes>
+      <!-- Source class (preserved, but no longer owns the feature) -->
+      <nodes xmi:id="_rhs_src"
+          incoming="_rhs_e_model_src">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class"/>
+      </nodes>
+      <!-- Feature (same object, now under targetClass) -->
+      <nodes xmi:id="_rhs_feat"
+          incoming="_rhs_e_tgt_feat">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Feature"/>
+        <attributes xmi:id="_rhs_feat_name" value="featureName">
+          <type href="http://momot.big.tuwien.ac.at/cra/1.0#//NamedElement/name"/>
+        </attributes>
+      </nodes>
+      <!-- Target class (now owns the feature) -->
+      <nodes xmi:id="_rhs_tgt"
+          incoming="_rhs_e_model_tgt"
+          outgoing="_rhs_e_tgt_feat">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class"/>
+        <attributes xmi:id="_rhs_tgt_name" value="targetClassName">
+          <type href="http://momot.big.tuwien.ac.at/cra/1.0#//NamedElement/name"/>
+        </attributes>
+      </nodes>
+      <!-- Edges -->
+      <edges xmi:id="_rhs_e_model_src"
+          source="_rhs_model" target="_rhs_src">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel/classes"/>
+      </edges>
+      <edges xmi:id="_rhs_e_model_tgt"
+          source="_rhs_model" target="_rhs_tgt">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel/classes"/>
+      </edges>
+      <edges xmi:id="_rhs_e_tgt_feat"
+          source="_rhs_tgt" target="_rhs_feat">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class/encapsulates"/>
+      </edges>
+    </rhs>
+
+    <!-- Mappings: model, sourceClass, feature, targetClass preserved across LHS→RHS -->
+    <mappings xmi:id="_map_model"  origin="_lhs_model" image="_rhs_model"/>
+    <mappings xmi:id="_map_src"    origin="_lhs_src"   image="_rhs_src"/>
+    <mappings xmi:id="_map_feat"   origin="_lhs_feat"  image="_rhs_feat"/>
+    <mappings xmi:id="_map_tgt"    origin="_lhs_tgt"   image="_rhs_tgt"/>
+  </units>
+
+  <!-- ================================================================
+       Rule: createClass
+       Adds a new empty Class with the given name to the ClassModel.
+       ================================================================ -->
+  <units xsi:type="henshin:Rule" xmi:id="_r_createClass" name="createClass">
+    <parameters xmi:id="_p_newClassName" name="newClassName">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+    <lhs xmi:id="_lhs_cc" name="Lhs">
+      <nodes xmi:id="_lhs_cc_model">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel"/>
+      </nodes>
+    </lhs>
+    <rhs xmi:id="_rhs_cc" name="Rhs">
+      <nodes xmi:id="_rhs_cc_model"
+          outgoing="_rhs_cc_e">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel"/>
+      </nodes>
+      <nodes xmi:id="_rhs_cc_cls"
+          incoming="_rhs_cc_e">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class"/>
+        <attributes xmi:id="_rhs_cc_name" value="newClassName">
+          <type href="http://momot.big.tuwien.ac.at/cra/1.0#//NamedElement/name"/>
+        </attributes>
+      </nodes>
+      <edges xmi:id="_rhs_cc_e"
+          source="_rhs_cc_model" target="_rhs_cc_cls">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel/classes"/>
+      </edges>
+    </rhs>
+    <mappings xmi:id="_map_cc_model" origin="_lhs_cc_model" image="_rhs_cc_model"/>
+  </units>
+
+  <!-- ================================================================
+       Rule: deleteEmptyClass
+       Removes a Class that encapsulates no features.
+       NAC ensures no feature is still inside the class before deletion.
+       ================================================================ -->
+  <units xsi:type="henshin:Rule" xmi:id="_r_deleteEmptyClass" name="deleteEmptyClass">
+    <parameters xmi:id="_p_emptyClassName" name="emptyClassName">
+      <type xsi:type="ecore:EDataType" href="http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    </parameters>
+    <lhs xmi:id="_lhs_dec" name="Lhs">
+      <nodes xmi:id="_lhs_dec_model"
+          outgoing="_lhs_dec_e">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel"/>
+      </nodes>
+      <nodes xmi:id="_lhs_dec_cls"
+          incoming="_lhs_dec_e">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class"/>
+        <attributes xmi:id="_lhs_dec_name" value="emptyClassName">
+          <type href="http://momot.big.tuwien.ac.at/cra/1.0#//NamedElement/name"/>
+        </attributes>
+      </nodes>
+      <edges xmi:id="_lhs_dec_e"
+          source="_lhs_dec_model" target="_lhs_dec_cls">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel/classes"/>
+      </edges>
+      <!-- NAC: class must not encapsulate any feature -->
+      <formula xsi:type="henshin:Not" xmi:id="_nac_dec">
+        <child xsi:type="henshin:NestedCondition" xmi:id="_nac_dec_cond">
+          <conclusion xmi:id="_nac_dec_conc">
+            <nodes xmi:id="_nac_dec_cls2"
+                outgoing="_nac_dec_edge">
+              <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class"/>
+            </nodes>
+            <nodes xmi:id="_nac_dec_feat"
+                incoming="_nac_dec_edge">
+              <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Feature"/>
+            </nodes>
+            <edges xmi:id="_nac_dec_edge"
+                source="_nac_dec_cls2" target="_nac_dec_feat">
+              <type href="http://momot.big.tuwien.ac.at/cra/1.0#//Class/encapsulates"/>
+            </edges>
+          </conclusion>
+          <mappings xmi:id="_nac_dec_map" origin="_lhs_dec_cls" image="_nac_dec_cls2"/>
+        </child>
+      </formula>
+    </lhs>
+    <rhs xmi:id="_rhs_dec" name="Rhs">
+      <nodes xmi:id="_rhs_dec_model">
+        <type href="http://momot.big.tuwien.ac.at/cra/1.0#//ClassModel"/>
+      </nodes>
+    </rhs>
+    <mappings xmi:id="_map_dec_model" origin="_lhs_dec_model" image="_rhs_dec_model"/>
+  </units>
+
+</henshin:Module>

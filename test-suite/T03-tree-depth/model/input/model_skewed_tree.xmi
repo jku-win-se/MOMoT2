@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="ASCII"?>
+<!--
+  T03 Tree Depth instance.
+
+  Logical structure:
+    root (depth=0)
+    ├── A  (depth=1)
+    │   └── B  (depth=2)
+    │       └── C  (depth=3)
+    │           └── D  (depth=4)
+    │               └── E  (depth=5)   ← deepest node
+    └── F  (depth=1)
+
+  MaxDepth = 5.
+
+  Optimal moves (minimising MaxDepth and SolutionLength):
+    0 moves → MaxDepth=5
+    1 move  → Reparent E to root → MaxDepth=3  (E is now child of root at depth=1,
+                                                 D loses a child, D.depth stays 4,
+                                                 A→B→C→D chain remains at depth=4)
+              Better: Reparent D to root → A→B→C at depth=3, D at depth=1 → MaxDepth=3
+    2 moves → Reparent D and C to root → MaxDepth=2
+    3 moves → Reparent D, C, and B to root → MaxDepth=1 (star topology)
+
+  Note: depth attributes encode the INITIAL depths. After each reparentNode rule
+  application the rule updates the moved node's depth to (newParent.depth + 1).
+  Descendant depths are not automatically updated; the fitness function should
+  recompute MaxDepth by traversal or by reading updated node.depth values.
+-->
+<tree:Tree xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:tree="http://momot.big.tuwien.ac.at/tree/1.0"
+    xsi:schemaLocation="http://momot.big.tuwien.ac.at/tree/1.0 ../tree.ecore"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    rootNode="//@nodes.0">
+  <nodes name="root" depth="0" children="//@nodes.1 //@nodes.6"/>
+  <nodes name="A"    depth="1" parent="//@nodes.0" children="//@nodes.2"/>
+  <nodes name="B"    depth="2" parent="//@nodes.1" children="//@nodes.3"/>
+  <nodes name="C"    depth="3" parent="//@nodes.2" children="//@nodes.4"/>
+  <nodes name="D"    depth="4" parent="//@nodes.3" children="//@nodes.5"/>
+  <nodes name="E"    depth="5" parent="//@nodes.4"/>
+  <nodes name="F"    depth="1" parent="//@nodes.0"/>
+</tree:Tree>

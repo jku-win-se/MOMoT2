@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { executeMomotJob, generateArtifactsFromEcore, runEndToEnd, buildKnownGoodStackFixture } from './lib.js';
+import { executeMomotJob, generateArtifactsFromEcore, runEndToEnd, buildKnownGoodStackFixture, validateHenshin } from './lib.js';
 
 const server = new McpServer({ name: 'momot-mcp', version: '1.1.0' });
 
@@ -81,58 +81,22 @@ server.tool(
   }
 );
 
-// Backward-compatible aliases.
 server.tool(
-  'momot_generate',
+  'validate_henshin',
   {
-    prompt: z.string().optional(),
-    packageName: z.string().optional(),
-    className: z.string().optional(),
-    modelPath: z.string(),
-    henshinModules: z.array(z.string()).default([])
+    henshinPath: z.string().describe('Path to the .henshin file (absolute or CWD-relative).'),
+    mode: z.enum(['structure', 'semantic', 'apply']).default('structure').describe(
+      '"structure": XMI parse only, no metamodel needed. ' +
+      '"semantic": resolve type refs against metamodel. ' +
+      '"apply": execute a rule against a model instance.'
+    ),
+    metamodelPath: z.string().optional().describe('Path to the .ecore file (required for semantic and apply modes).'),
+    modelPath: z.string().optional().describe('Path to the .xmi model instance (required for apply mode).'),
+    ruleName: z.string().optional().describe('Name of the rule to apply (required for apply mode).'),
+    parameters: z.record(z.string()).default({}).describe('Rule parameter values as a string map, e.g. { "amount": "3" }.')
   },
-  async ({ prompt, packageName, className, modelPath, henshinModules }) => {
-    const lines = [];
-    if (prompt) {
-      lines.push(`// ${prompt}`);
-    }
-    if (className) {
-      lines.push(`// scaffold for ${className}`);
-    }
-    lines.push(`package ${packageName || 'momot.search'}`);
-    lines.push('');
-    lines.push('search = {');
-    lines.push('  model = {');
-    lines.push(`    file = "${modelPath}"`);
-    lines.push('  }');
-    lines.push('  transformations = {');
-    lines.push(`    modules = [ ${henshinModules.map((m) => `"${m}"`).join(', ')} ]`);
-    lines.push('  }');
-    lines.push('}');
-    return { content: [{ type: 'text', text: lines.join('\n') }] };
-  }
-);
-
-server.tool('momot_validate', { scriptContent: z.string() }, async ({ scriptContent }) => {
-  return {
-    content: [{ type: 'text', text: JSON.stringify({ valid: scriptContent.trim().length > 0 }, null, 2) }]
-  };
-});
-
-server.tool(
-  'momot_run',
-  {
-    scriptPath: z.string().optional().default('job.momot'),
-    scriptContent: z.string(),
-    filesBase64: z.record(z.string()).default({}),
-    restBaseUrl: z.string().optional()
-  },
-  async ({ scriptPath, scriptContent, filesBase64, restBaseUrl }) => {
-    const runFiles = {
-      ...filesBase64,
-      [scriptPath]: Buffer.from(scriptContent, 'utf8').toString('base64')
-    };
-    const result = await executeMomotJob({ restBaseUrl, scriptPath, filesBase64: runFiles });
+  async (input) => {
+    const result = await validateHenshin(input);
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );

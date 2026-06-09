@@ -1,0 +1,19 @@
+---
+description: Activates when editing .henshin files to ensure Henshin and MOMoT best practices.
+globs: ["**/*.henshin"]
+---
+
+# Henshin Expert Rule
+
+When working with `.henshin` files, always adhere to the following:
+
+- **Knowledge Base**: Reference the documentation in `doc/henshin/` for rule anatomy, parameters, and common patterns.
+- **Metamodel Binding**: Ensure the `nsURI` in the `<imports>` tag correctly points to the corresponding `.ecore` file.
+- **Action Semantics**: Use `action="create"`, `action="delete"`, and `preserve` (default) consistently.
+- **Parameter Types**: Properly type parameters (e.g., `EString`, `EInt`) using references to the Ecore metamodel.
+- **Validation**: Before finishing, run the local validator:
+  ```bash
+  node tools/henshin-validator/validate.mjs --validate-semantic <this_file> --metamodel <path_to_ecore>
+  ```
+- **No Orphan Nodes**: Every node in the RHS must either be mapped from the LHS or have `action="create"`.
+- **MOMoT Integration**: Remember that `IN` and `INOUT` parameters will be exposed as search variables.

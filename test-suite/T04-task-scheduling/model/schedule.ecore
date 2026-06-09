@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    name="schedule"
+    nsURI="http://momot.big.tuwien.ac.at/schedule/1.0"
+    nsPrefix="schedule">
+
+  <!--
+    Root container for a scheduling problem.
+    Machines are available workers; Tasks are units of work to be assigned.
+  -->
+  <eClassifiers xsi:type="ecore:EClass" name="Schedule">
+    <eStructuralFeatures xsi:type="ecore:EReference" name="machines"
+        upperBound="-1" eType="#//Machine" containment="true"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="tasks"
+        upperBound="-1" eType="#//Task" containment="true"/>
+  </eClassifiers>
+
+  <!-- A processing unit. The Makespan of a Machine is the sum of durations
+       of all tasks assigned to it. -->
+  <eClassifiers xsi:type="ecore:EClass" name="Machine">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+  </eClassifiers>
+
+  <!-- A unit of work with a fixed duration (processing time). -->
+  <eClassifiers xsi:type="ecore:EClass" name="Task">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="id"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="duration"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"/>
+    <!-- Non-containment reference: which machine this task is currently assigned to -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="assignedTo"
+        eType="#//Machine"/>
+  </eClassifiers>
+
+</ecore:EPackage>

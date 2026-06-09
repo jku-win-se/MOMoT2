@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ecore:EPackage xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+    xmlns:ecore="http://www.eclipse.org/emf/2002/Ecore"
+    name="tree"
+    nsURI="http://momot.big.tuwien.ac.at/tree/1.0"
+    nsPrefix="tree">
+
+  <!--
+    Tree container. All Node objects are stored flat in 'nodes' (containment).
+    The parent/children references form the logical tree structure.
+  -->
+  <eClassifiers xsi:type="ecore:EClass" name="Tree">
+    <!-- Flat containment of all nodes in the tree -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="nodes"
+        upperBound="-1" eType="#//Node" containment="true"/>
+    <!-- Non-containment pointer to the single root node -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="rootNode"
+        eType="#//Node"/>
+  </eClassifiers>
+
+  <!--
+    Node. The logical parent-child relationship is represented as non-containment
+    cross-references so that all nodes remain in Tree.nodes.
+
+    depth is stored explicitly so the MOMoT fitness function can read it without
+    traversal. It must be kept consistent by the Henshin rule.
+  -->
+  <eClassifiers xsi:type="ecore:EClass" name="Node">
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="name"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EString"/>
+    <eStructuralFeatures xsi:type="ecore:EAttribute" name="depth"
+        lowerBound="1" eType="ecore:EDataType http://www.eclipse.org/emf/2002/Ecore#//EInt"
+        defaultValueLiteral="0"/>
+    <!-- Non-containment references for logical tree structure -->
+    <eStructuralFeatures xsi:type="ecore:EReference" name="parent"
+        eType="#//Node" eOpposite="#//Node/children"/>
+    <eStructuralFeatures xsi:type="ecore:EReference" name="children"
+        upperBound="-1" eType="#//Node" eOpposite="#//Node/parent"/>
+  </eClassifiers>
+
+</ecore:EPackage>

@@ -1,0 +1,42 @@
+<?xml version="1.0" encoding="ASCII"?>
+<!--
+  T04 Task Scheduling instance.
+
+  3 machines, 4 tasks. All tasks initially assigned to M1.
+
+  Task durations: T1=4, T2=3, T3=2, T4=1  (total = 10)
+  Initial Makespan = 10 (all load on M1), M2 and M3 are idle.
+
+  Exact Pareto front (Makespan vs SolutionLength):
+    SL=0: Makespan=10  — initial state
+    SL=1: Makespan=6   — best single reassignment: move T1 to M2 → M1=6, M2=4
+    SL=2: Makespan=5   — best two reassignments: move T1→M2, T2→M3 → M1=3, M2=4, M3=3 → Makespan=4
+                         OR: move T1→M2, T4→M3 → M1=6-1=5... let's recompute:
+                             after T1→M2: M1={T2,T3,T4}=6, M2={T1}=4; Makespan=6
+                             after T2→M3: M1={T3,T4}=3, M2={T1}=4, M3={T2}=3; Makespan=4
+                         So best SL=2 → Makespan=4.
+                         (Makespan=5 requires moving T1→M2 and T4→M2 → M1=5, M2=5; Makespan=5 in 2 moves)
+                         Non-dominated SL=2 point: (Makespan=4, SL=2)
+    SL=3: Makespan=4   — already achieved at SL=2, so SL=3 does not improve it further →
+                         the (Makespan=4, SL=3) point is dominated by (Makespan=4, SL=2).
+
+  Revised reference front:
+    (10, 0), (6, 1), (4, 2)
+
+  Note: Makespan cannot go below 4 because T1 has duration=4 and must be on some machine alone
+  or with tasks that keep the total ≥ 4.  Specifically, assigning T1 alone → machine load=4,
+  and any other machine gets at most 3+2+1=6; with optimal split the other machines get ≤4.
+-->
+<schedule:Schedule xmi:version="2.0"
+    xmlns:xmi="http://www.omg.org/XMI"
+    xmlns:schedule="http://momot.big.tuwien.ac.at/schedule/1.0"
+    xsi:schemaLocation="http://momot.big.tuwien.ac.at/schedule/1.0 ../schedule.ecore"
+    xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <machines id="M1"/>
+  <machines id="M2"/>
+  <machines id="M3"/>
+  <tasks id="T1" duration="4" assignedTo="//@machines.0"/>
+  <tasks id="T2" duration="3" assignedTo="//@machines.0"/>
+  <tasks id="T3" duration="2" assignedTo="//@machines.0"/>
+  <tasks id="T4" duration="1" assignedTo="//@machines.0"/>
+</schedule:Schedule>
