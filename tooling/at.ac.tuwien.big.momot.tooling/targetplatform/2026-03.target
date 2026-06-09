@@ -1,0 +1,111 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?pde version="3.8"?>
+<target name="MOMoT 2026-03" sequenceNumber="1">
+  <locations>
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="false" type="InstallableUnit">
+      <unit id="org.eclipse.platform.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.jdt.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.help.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.help" version="0.0.0"/>
+      <unit id="org.eclipse.help.base" version="0.0.0"/>
+      <unit id="org.eclipse.help.ui" version="0.0.0"/>
+      <unit id="org.eclipse.help.webapp" version="0.0.0"/>
+      <unit id="org.eclipse.ui.intro" version="0.0.0"/>
+      <unit id="org.eclipse.ui.intro.universal" version="0.0.0"/>
+      <unit id="org.eclipse.equinox.http.servlet" version="0.0.0"/>
+      <unit id="org.eclipse.equinox.http.jetty" version="0.0.0"/>
+      <unit id="org.eclipse.equinox.jsp.jasper" version="0.0.0"/>
+      <unit id="org.eclipse.equinox.p2.user.ui.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.gef" version="0.0.0"/>
+      <unit id="org.eclipse.draw2d" version="0.0.0"/>
+      <unit id="org.eclipse.gmf.runtime.common.core" version="0.0.0"/>
+      <unit id="org.eclipse.gmf.runtime.common.ui" version="0.0.0"/>
+      <unit id="org.eclipse.search.core" version="0.0.0"/>
+      <unit id="org.commonmark" version="0.0.0"/>
+      <unit id="org.commonmark.ext-gfm-tables" version="0.0.0"/>
+      <unit id="bcprov" version="0.0.0"/>
+      <unit id="bcpg" version="0.0.0"/>
+      <unit id="bcutil" version="0.0.0"/>
+      <unit id="org.tukaani.xz" version="0.0.0"/>
+      <unit id="org.apache.felix.scr" version="0.0.0"/>
+      <unit id="org.eclipse.emf.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.emf.mwe2.language.sdk.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.emf.mwe2.runtime.sdk.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.ocl.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.xtext.sdk.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.xtext.xbase.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.xtext.xbase.lib.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.xtend.sdk.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.uml2.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.m2e.feature.feature.group" version="0.0.0"/>
+      <repository location="https://download.eclipse.org/releases/2026-03/"/>
+    </location>
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="false" type="InstallableUnit">
+      <unit id="org.eclipse.emf.henshin.sdk.feature.group" version="0.0.0"/>
+      <unit id="org.eclipse.emf.henshin.model" version="0.0.0"/>
+      <unit id="org.eclipse.emf.henshin.interpreter" version="0.0.0"/>
+      <unit id="org.eclipse.emf.henshin.statespace" version="0.0.0"/>
+      <unit id="org.eclipse.emf.henshin.statespace.explorer" version="0.0.0"/>
+      <unit id="org.eclipse.emf.henshin.trace" version="0.0.0"/>
+      <unit id="org.eclipse.emf.henshin.wrap" version="0.0.0"/>
+      <repository location="https://download.eclipse.org/modeling/emft/henshin/updates/release/"/>
+    </location>
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="false" type="InstallableUnit">
+      <unit id="org.eclipse.m2m.atl.engine" version="0.0.0"/>
+      <unit id="org.eclipse.m2m.atl.engine.emfvm.launch" version="0.0.0"/>
+      <unit id="org.eclipse.m2m.atl.dsls" version="0.0.0"/>
+      <unit id="org.eclipse.m2m.atl.core" version="0.0.0"/>
+      <unit id="org.eclipse.m2m.atl.common" version="0.0.0"/>
+      <unit id="org.eclipse.m2m.atl.engine.emfvm" version="0.0.0"/>
+      <unit id="org.eclipse.m2m.atl.core.emf" version="0.0.0"/>
+      <unit id="org.eclipse.m2m.atl.core.ant" version="0.0.0"/>
+      <unit id="org.eclipse.m2m.atl.engine.vm" version="0.0.0"/>
+      <repository location="https://download.eclipse.org/mmt/atl/updates/releases/4.9.0/"/>
+    </location>
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="false" type="InstallableUnit">
+      <unit id="org.eclipse.xtext.xtext.generator" version="0.0.0"/>
+      <unit id="org.eclipse.xtend.core" version="0.0.0"/>
+      <repository location="https://download.eclipse.org/modeling/tmf/xtext/updates/releases/2.41.0/"/>
+    </location>
+    <!-- Keep JDT UI/manipulation on 2024-03 for Java 17 compatibility with Xtext common types UI. -->
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="false" type="InstallableUnit">
+      <unit id="org.eclipse.jdt.ui" version="3.32.0.v20240215-0312"/>
+      <unit id="org.eclipse.jdt.core.manipulation" version="1.21.0.v20240221-0406"/>
+      <repository location="https://download.eclipse.org/releases/2024-03/"/>
+    </location>
+    <location includeAllPlatforms="false" includeConfigurePhase="false" includeMode="slicer" includeSource="false" type="InstallableUnit">
+      <unit id="com.google.guava" version="0.0.0"/>
+      <unit id="org.eclipse.orbit.maven.org.apache.batik.feature.group" version="0.0.0"/>
+      <unit id="org.apache.commons.commons-io" version="0.0.0"/>
+      <unit id="org.apache.commons.commons-logging" version="0.0.0"/>
+      <unit id="org.apache.commons.lang3" version="0.0.0"/>
+      <unit id="org.apache.commons.math3" version="0.0.0"/>
+      <unit id="org.apache.commons.cli" version="0.0.0"/>
+      <unit id="org.junit" version="0.0.0"/>
+      <unit id="org.apache.log4j" version="0.0.0"/>
+      <unit id="org.hamcrest" version="0.0.0"/>
+      <unit id="org.hamcrest.core" version="0.0.0"/>
+      <unit id="io.github.classgraph.classgraph" version="0.0.0"/>
+      <unit id="com.google.inject" version="0.0.0"/>
+      <unit id="com.google.guava.failureaccess" version="0.0.0"/>
+      <unit id="org.aopalliance" version="0.0.0"/>
+      <unit id="com.ibm.icu" version="0.0.0"/>
+      <unit id="org.objectweb.asm" version="0.0.0"/>
+      <unit id="org.apache.batik.css" version="0.0.0"/>
+      <unit id="org.apache.xmlgraphics" version="0.0.0"/>
+      <unit id="org.eclipse.orbit.xml-apis-ext" version="0.0.0"/>
+      <unit id="com.github.weisj.jsvg" version="0.0.0"/>
+      <unit id="jakarta.annotation-api" version="2.1.1"/>
+      <unit id="jakarta.inject.jakarta.inject-api" version="2.0.1"/>
+      <unit id="com.sun.jna" version="0.0.0"/>
+      <unit id="com.sun.jna.platform" version="0.0.0"/>
+      <unit id="org.osgi.service.component" version="0.0.0"/>
+      <unit id="org.osgi.service.event" version="0.0.0"/>
+      <unit id="org.osgi.util.function" version="0.0.0"/>
+      <unit id="org.osgi.util.promise" version="0.0.0"/>
+      <unit id="org.osgi.service.prefs" version="0.0.0"/>
+      <unit id="lpg.runtime.java" version="0.0.0"/>
+        <repository location="https://download.eclipse.org/tools/orbit/simrel/orbit-aggregation/2026-03/"/>
+    </location>
+  </locations>
+</target>
