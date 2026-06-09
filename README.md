@@ -96,4 +96,6 @@ Full documentation: [AGENTS.md](https://github.com/jku-win-se/MOMoT2/blob/standa
 
 MOMoT was developed by Martin Fleck ([@martin-fleck](https://github.com/martin-fleck)), Javier Troya ([@javitroya](https://github.com/javitroya)), and Manuel Wimmer ([@manuelWimmer](https://github.com/manuelWimmer)).
 
+The MCP server and agent integration on the **standalone** branch were developed by MohammadHadi Dehghani ([@hadiDHD](https://github.com/hadiDHD)).
+
 Original project: http://martin-fleck.github.io/momot/

@@ -48,7 +48,7 @@ bash scripts/deploy.sh
 The **`standalone`** branch is a slim, container-first distribution for running MOMoT without the Eclipse IDE:
 
 - **Docker REST runner** — zip-in / zip-out job execution on `POST /run`
-- **MCP server** (`mcp/`) — bridges LLM tool calls to the REST runner over stdio JSON-RPC
+- **MCP server** (`mcp/`) — bridges LLM tool calls to the REST runner over stdio JSON-RPC (developed by MohammadHadi Dehghani ([@hadiDHD](https://github.com/hadiDHD)))
 - **Test suite** — four end-to-end benchmarks (`test-suite/T01`–`T04`) with Henshin validation tiers
 - **Henshin validator CLI** — fast local rule validation without Docker (`tools/henshin-validator/`)
 - **Agent playbook** — [AGENTS.md](https://github.com/jku-win-se/MOMoT2/blob/standalone/AGENTS.md) documents the full agent workflow

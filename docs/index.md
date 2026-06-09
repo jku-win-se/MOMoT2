@@ -39,6 +39,9 @@ You can view and download the necessary Eclipse plugin projects from [GitHub](ht
 
 ### Authors and Contributors
 MOMoT has been developed by Martin Fleck ([@martin-fleck](https://github.com/martin-fleck)), Javier Troya ([@javitroya](https://github.com/javitroya)) and Manuel Wimmer ([@manuelWimmer](https://github.com/manuelWimmer)).
+
+The MCP server and agent integration on the **standalone** branch were developed by MohammadHadi Dehghani ([@hadiDHD](https://github.com/hadiDHD)).
+
 At this point, we would like to thank the developers of the following frameworks, which we have used in order to develop MOMoT:
 
 * [Eclipse Henshin](http://www.eclipse.org/henshin/): Henshin is used to formulate the transformation units to manipulate the model.
