@@ -37,8 +37,34 @@ import org.eclipse.xtext.util.CancelIndicator;
 import org.eclipse.xtext.validation.CheckMode;
 import org.eclipse.xtext.validation.IResourceValidator;
 import org.eclipse.xtext.validation.Issue;
+import org.eclipse.xtext.diagnostics.Severity;
 
 final class MomotScriptCompiler {
+   static final class ValidationResult {
+      private final List<Issue> issues;
+      private final List<Resource.Diagnostic> parseErrors;
+
+      private ValidationResult(final List<Issue> issues, final List<Resource.Diagnostic> parseErrors) {
+         this.issues = issues;
+         this.parseErrors = parseErrors;
+      }
+
+      List<Issue> issues() {
+         return issues;
+      }
+
+      List<Resource.Diagnostic> parseErrors() {
+         return parseErrors;
+      }
+
+      boolean hasErrors() {
+         if(!parseErrors.isEmpty()) {
+            return true;
+         }
+         return hasValidationErrors(issues);
+      }
+   }
+
    static final class CompilationResult {
       private final Path jarPath;
       private final String mainClass;
@@ -64,6 +90,23 @@ final class MomotScriptCompiler {
    }
 
    private MomotScriptCompiler() {
+   }
+
+   static ValidationResult validateStructure(final Path scriptPath) throws Exception {
+      final Injector injector = createInjector();
+      final Resource resource = loadResource(injector, scriptPath);
+      return new ValidationResult(List.of(), collectParseErrors(resource));
+   }
+
+   static ValidationResult validateOnly(final Path scriptPath, final Path projectRoot) throws Exception {
+      prepareHeadlessValidation(projectRoot);
+      final Injector injector = createInjector();
+      final Resource resource = loadResource(injector, scriptPath);
+      final List<Resource.Diagnostic> parseErrors = collectParseErrors(resource);
+      if(!parseErrors.isEmpty()) {
+         return new ValidationResult(List.of(), parseErrors);
+      }
+      return new ValidationResult(validateResource(injector, resource), parseErrors);
    }
 
    static CompilationResult compile(final Path scriptPath, final Path compileRoot) throws Exception {
@@ -114,18 +157,34 @@ final class MomotScriptCompiler {
       return resourceSet.getResource(scriptUri, true);
    }
 
-   private static List<Issue> validate(final Injector injector, final Resource resource) {
+   static List<Issue> validateResource(final Injector injector, final Resource resource) {
       final IResourceValidator validator = injector.getInstance(IResourceValidator.class);
       return validator.validate(resource, CheckMode.ALL, CancelIndicator.NullImpl);
    }
 
-   private static boolean hasErrors(final List<Issue> issues) {
+   static boolean hasValidationErrors(final List<Issue> issues) {
       for(final Issue issue : issues) {
-         if(issue.getSeverity() == org.eclipse.xtext.diagnostics.Severity.ERROR) {
+         if(issue.getSeverity() == Severity.ERROR) {
             return true;
          }
       }
       return false;
+   }
+
+   private static List<Resource.Diagnostic> collectParseErrors(final Resource resource) {
+      return new ArrayList<>(resource.getErrors());
+   }
+
+   static void prepareHeadlessValidation(final Path projectRoot) throws Exception {
+      if(projectRoot != null) {
+         final Class<?> validatorClass = Class.forName("at.ac.tuwien.big.momot.lang.validation.MOMoTValidator");
+         final Method setRootMethod = validatorClass.getMethod("setHeadlessProjectRoot", String.class);
+         setRootMethod.invoke(null, projectRoot.toAbsolutePath().normalize().toString());
+      }
+
+      final Class<?> preferencesClass = Class.forName("at.ac.tuwien.big.momot.lang.preference.MOMoTPreferences");
+      final Method setHeadlessMethod = preferencesClass.getMethod("setHeadlessValidationEnabled", boolean.class);
+      setHeadlessMethod.invoke(null, true);
    }
 
    private static void appendIssues(final StringBuilder out, final List<Issue> issues) {

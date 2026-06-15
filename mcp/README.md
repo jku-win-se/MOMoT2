@@ -13,8 +13,10 @@ This MCP server exposes tools for artifact generation and REST execution through
 | `generate_artifacts_from_ecore` | Validated | Unit + integration + stdio |
 | `execute_momot_job` | Validated | Unit + integration + stdio |
 | `run_end_to_end` | Validated | Unit + integration + stdio |
+| `validate_henshin` | Validated | No |
+| `validate_momot` | Validated | No |
 | `momot_generate` | PoC alias | No |
-| `momot_validate` | PoC alias | No |
+| `momot_validate` | PoC alias (superseded by `validate_momot`) | No |
 | `momot_run` | PoC alias | No |
 
 ## Tools (validated functional subset)
@@ -52,6 +54,30 @@ Output envelope:
 - logTail
 - outputs
 - diagnostics
+
+### validate_henshin
+Wraps `tools/henshin-validator/validate.mjs` for local Henshin rule validation.
+
+Input schema highlights:
+- henshinPath (required)
+- mode: `structure` | `semantic` | `apply` (default `structure`)
+- metamodelPath (required for `semantic` and `apply`)
+- modelPath, ruleName (required for `apply`)
+- parameters (optional string map for rule parameters)
+
+### validate_momot
+Wraps `tools/momot-validator/validate.mjs` for local `.momot` script validation.
+
+Input schema highlights:
+- momotPath (required)
+- mode: `structure` | `semantic` | `compile` (default `structure`)
+- projectRoot (recommended for `semantic` and `compile` when script paths are job-relative)
+
+Output envelope:
+- success
+- exitCode
+- result (parsed JSON from validator stdout)
+- stderr (optional)
 
 ### run_end_to_end
 Combined generation and execution flow.
@@ -178,12 +204,7 @@ Output: envelope with a single `text` content item containing the generated scri
 
 ### momot_validate
 
-Returns `{valid: true}` if the provided `scriptContent` contains any non-whitespace character; `{valid: false}` otherwise. Does not parse the script, does not check syntax, does not validate semantics. An invalid `.momot` script with arbitrary text content will be reported as `valid: true`.
-
-Input schema:
-- scriptContent (required)
-
-Output: envelope with a `text` content item containing JSON `{"valid": true|false}`.
+**Superseded by `validate_momot`.** This PoC stub returns `{valid: true}` for any non-empty string and does not parse the script. Use `validate_momot` for real validation.
 
 ### momot_run
 

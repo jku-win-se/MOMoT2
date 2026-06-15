@@ -1,0 +1,13 @@
+{
+  "name": "momot-validator",
+  "version": "1.0.0",
+  "description": "Fast local MOMoT script validator CLI",
+  "type": "module",
+  "bin": {
+    "validate-momot": "./validate.mjs"
+  },
+  "scripts": {
+    "setup": "node validate.mjs --setup",
+    "test:t01": "node validate.mjs --validate-structure ../../test-suite/T01-stack-balancing/src/at/ac/tuwien/big/momot/examples/stack/StackSearchExample.momot && node validate.mjs --validate-semantic ../../test-suite/T01-stack-balancing/src/at/ac/tuwien/big/momot/examples/stack/StackSearchExample.momot --project-root ../../test-suite/T01-stack-balancing && node validate.mjs --compile ../../test-suite/T01-stack-balancing/src/at/ac/tuwien/big/momot/examples/stack/StackSearchExample.momot --project-root ../../test-suite/T01-stack-balancing"
+  }
+}

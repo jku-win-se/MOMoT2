@@ -1,10 +1,16 @@
 package at.ac.tuwien.big.momot.lang.preference;
 
+import java.util.HashMap;
+import java.util.Map;
+
 import org.eclipse.core.runtime.preferences.IEclipsePreferences;
 import org.eclipse.core.runtime.preferences.InstanceScope;
 import org.osgi.service.prefs.BackingStoreException;
 
 public final class MOMoTPreferences {
+   private static boolean headlessValidation = false;
+
+   private static final Map<String, Boolean> HEADLESS_OVERRIDES = new HashMap<>();
    public static final String PREFERENCE_QUALIFIER = "at.ac.tuwien.big.momot.lang.preference";
 
    public static final String EVALUATION_ALGORITHM_RUNS = "EVALUATION_ALGORITHM_RUNS";
@@ -54,8 +60,28 @@ public final class MOMoTPreferences {
       return false;
    }
 
+   public static void setHeadlessValidationEnabled(final boolean enabled) {
+      headlessValidation = enabled;
+      HEADLESS_OVERRIDES.clear();
+      if(enabled) {
+         HEADLESS_OVERRIDES.put(EVALUATION_MODULE_EXISTENCE, true);
+         HEADLESS_OVERRIDES.put(EVALUATION_MODEL_EXISTENCE, true);
+         HEADLESS_OVERRIDES.put(EVALUATION_REFERENCE_SET_EXISTENCE, true);
+         HEADLESS_OVERRIDES.put(EVALUATION_OCL, true);
+         HEADLESS_OVERRIDES.put(EVALUATION_UNIT_EXISTENCE, true);
+         HEADLESS_OVERRIDES.put(EVALUATION_PARAMETER_EXISTENCE, true);
+      }
+   }
+
+   private static boolean getPreferenceBoolean(final String key, final boolean defaultValue) {
+      if(headlessValidation) {
+         return HEADLESS_OVERRIDES.getOrDefault(key, defaultValue);
+      }
+      return getPreferences().getBoolean(key, defaultValue);
+   }
+
    public static boolean getEvaluationAlgorithmRuns() {
-      return getPreferences().getBoolean(EVALUATION_ALGORITHM_RUNS, getEvaluationAlgorithmRunsDefault());
+      return getPreferenceBoolean(EVALUATION_ALGORITHM_RUNS, getEvaluationAlgorithmRunsDefault());
    }
 
    public static boolean getEvaluationAlgorithmRunsDefault() {
@@ -63,7 +89,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationAnalysisFileOverriden() {
-      return getPreferences().getBoolean(EVALUATION_ANALYSIS_FILE_OVERRIDDEN,
+      return getPreferenceBoolean(EVALUATION_ANALYSIS_FILE_OVERRIDDEN,
             getEvaluationAnalysisFileOverridenDefault());
    }
 
@@ -72,7 +98,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationDuplicateAlgorithmName() {
-      return getPreferences().getBoolean(EVALUATION_DUPLICATE_ALGORITHM_NAME,
+      return getPreferenceBoolean(EVALUATION_DUPLICATE_ALGORITHM_NAME,
             getEvaluationDuplicateAlgorithmNameDefault());
    }
 
@@ -81,7 +107,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationDuplicateAlgorithmReference() {
-      return getPreferences().getBoolean(EVALUATION_DUPLICATE_ALGORITHM_REFERENCE,
+      return getPreferenceBoolean(EVALUATION_DUPLICATE_ALGORITHM_REFERENCE,
             getEvaluationDuplicateAlgorithmReferenceDefault());
    }
 
@@ -90,7 +116,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationDuplicateParameterKeys() {
-      return getPreferences().getBoolean(EVALUATION_DUPLICATE_PARAMETER_KEYS,
+      return getPreferenceBoolean(EVALUATION_DUPLICATE_PARAMETER_KEYS,
             getEvaluationDuplicateParameterKeysDefault());
    }
 
@@ -99,7 +125,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationManyObjectives() {
-      return getPreferences().getBoolean(EVALUATION_MANY_OBJECTIVES, getEvaluationManyObjectivesDefault());
+      return getPreferenceBoolean(EVALUATION_MANY_OBJECTIVES, getEvaluationManyObjectivesDefault());
    }
 
    public static boolean getEvaluationManyObjectivesDefault() {
@@ -107,7 +133,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationModelFileExistence() {
-      return getPreferences().getBoolean(EVALUATION_MODEL_EXISTENCE, getEvaluationModelFileExistenceDefault());
+      return getPreferenceBoolean(EVALUATION_MODEL_EXISTENCE, getEvaluationModelFileExistenceDefault());
    }
 
    public static boolean getEvaluationModelFileExistenceDefault() {
@@ -115,7 +141,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationModuleFileExistence() {
-      return getPreferences().getBoolean(EVALUATION_MODULE_EXISTENCE, getEvaluationModuleFileExistenceDefault());
+      return getPreferenceBoolean(EVALUATION_MODULE_EXISTENCE, getEvaluationModuleFileExistenceDefault());
    }
 
    public static boolean getEvaluationModuleFileExistenceDefault() {
@@ -123,7 +149,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationNrIterations() {
-      return getPreferences().getBoolean(EVALUATION_NR_ITERATIONS, getEvaluationNrIterationsDefault());
+      return getPreferenceBoolean(EVALUATION_NR_ITERATIONS, getEvaluationNrIterationsDefault());
    }
 
    public static boolean getEvaluationNrIterationsDefault() {
@@ -131,7 +157,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationObjectIdentity() {
-      return getPreferences().getBoolean(EVALUATION_OBJECT_IDENTITY, getEvaluationObjectIdentityDefault());
+      return getPreferenceBoolean(EVALUATION_OBJECT_IDENTITY, getEvaluationObjectIdentityDefault());
    }
 
    public static boolean getEvaluationObjectIdentityDefault() {
@@ -139,7 +165,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationObjectivesFileOverriden() {
-      return getPreferences().getBoolean(EVALUATION_OBJECTIVES_FILE_OVERRIDDEN,
+      return getPreferenceBoolean(EVALUATION_OBJECTIVES_FILE_OVERRIDDEN,
             getEvaluationObjectivesFileOverridenDefault());
    }
 
@@ -148,7 +174,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationOCL() {
-      return getPreferences().getBoolean(EVALUATION_OCL, getEvaluationOCLDefault());
+      return getPreferenceBoolean(EVALUATION_OCL, getEvaluationOCLDefault());
    }
 
    public static boolean getEvaluationOCLDefault() {
@@ -156,7 +182,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationParameterExistence() {
-      return getPreferences().getBoolean(EVALUATION_PARAMETER_EXISTENCE, getEvaluationParameterExistenceDefault());
+      return getPreferenceBoolean(EVALUATION_PARAMETER_EXISTENCE, getEvaluationParameterExistenceDefault());
    }
 
    public static boolean getEvaluationParameterExistenceDefault() {
@@ -164,7 +190,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationPopulationSize() {
-      return getPreferences().getBoolean(EVALUATION_POPULATION_SIZE, getEvaluationPopulationSizeDefault());
+      return getPreferenceBoolean(EVALUATION_POPULATION_SIZE, getEvaluationPopulationSizeDefault());
    }
 
    public static boolean getEvaluationPopulationSizeDefault() {
@@ -172,7 +198,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationReferenceSetExistence() {
-      return getPreferences().getBoolean(EVALUATION_REFERENCE_SET_EXISTENCE,
+      return getPreferenceBoolean(EVALUATION_REFERENCE_SET_EXISTENCE,
             getEvaluationReferenceSetExistenceDefault());
    }
 
@@ -181,7 +207,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationSingleObjective() {
-      return getPreferences().getBoolean(EVALUATION_SINGLE_OBJECTIVE, getEvaluationSingleObjectiveDefault());
+      return getPreferenceBoolean(EVALUATION_SINGLE_OBJECTIVE, getEvaluationSingleObjectiveDefault());
    }
 
    public static boolean getEvaluationSingleObjectiveDefault() {
@@ -189,7 +215,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationSolutionsFileOverriden() {
-      return getPreferences().getBoolean(EVALUATION_SOLUTIONS_FILE_OVERRIDDEN,
+      return getPreferenceBoolean(EVALUATION_SOLUTIONS_FILE_OVERRIDDEN,
             getEvaluationSolutionsFileOverridenDefault());
    }
 
@@ -198,7 +224,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationUnitApplicability() {
-      return getPreferences().getBoolean(EVALUATION_UNIT_APPLICABILITY, getEvaluationUnitApplicabilityDefault());
+      return getPreferenceBoolean(EVALUATION_UNIT_APPLICABILITY, getEvaluationUnitApplicabilityDefault());
    }
 
    public static boolean getEvaluationUnitApplicabilityDefault() {
@@ -206,7 +232,7 @@ public final class MOMoTPreferences {
    }
 
    public static boolean getEvaluationUnitExistence() {
-      return getPreferences().getBoolean(EVALUATION_UNIT_EXISTENCE, getEvaluationUnitExistenceDefault());
+      return getPreferenceBoolean(EVALUATION_UNIT_EXISTENCE, getEvaluationUnitExistenceDefault());
    }
 
    public static boolean getEvaluationUnitExistenceDefault() {

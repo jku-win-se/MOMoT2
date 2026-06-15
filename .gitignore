@@ -17,6 +17,9 @@ hs_err_pid*
 # xtend
 *.xtendbin
 
+# Eclipse build output
+/bin/
+
 # Obsidian vault (local-only)
 .obsidian/
 
@@ -34,3 +37,9 @@ headless-example/job-minimal/
 headless-example/job-minimal.zip
 headless-example/response-minimal/
 headless-example/response-minimal.zip
+
+# MOMoT validator runtime classpath (built by npm run setup)
+tools/momot-validator/lib/
+
+# Accidental Maven output from validator dependency copy
+plugins/at.ac.tuwien.big.momot.runner/tools/

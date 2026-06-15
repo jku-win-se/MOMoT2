@@ -580,6 +580,47 @@ function sanitizeJavaIdentifier(value) {
  *
  * All paths must be absolute or relative to the current working directory of the process.
  */
+export async function validateMomot({ momotPath, mode = 'structure', projectRoot }) {
+  const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
+  const validatorScript = path.join(repoRoot, 'tools', 'momot-validator', 'validate.mjs');
+
+  if (!fs.existsSync(validatorScript)) {
+    return { success: false, error: `Validator not found at ${validatorScript}. Run 'npm run setup' in tools/momot-validator/.` };
+  }
+
+  const args = [];
+  if (mode === 'structure') {
+    args.push('--validate-structure', momotPath);
+  } else if (mode === 'semantic') {
+    args.push('--validate-semantic', momotPath);
+    if (projectRoot) args.push('--project-root', projectRoot);
+  } else if (mode === 'compile') {
+    args.push('--compile', momotPath);
+    if (projectRoot) args.push('--project-root', projectRoot);
+  } else {
+    return { success: false, error: `Unknown mode "${mode}". Use "structure", "semantic", or "compile".` };
+  }
+
+  return new Promise((resolve) => {
+    const proc = spawn('node', [validatorScript, ...args]);
+    let stdout = '';
+    let stderr = '';
+    proc.stdout.on('data', (d) => { stdout += d; });
+    proc.stderr.on('data', (d) => { stderr += d; });
+    proc.on('close', (exitCode) => {
+      let result = null;
+      try { result = JSON.parse(stdout.trim()); } catch { result = { raw: stdout.trim() }; }
+      resolve({
+        success: exitCode === 0,
+        exitCode,
+        result,
+        ...(stderr.trim() ? { stderr: stderr.trim() } : {})
+      });
+    });
+    proc.on('error', (err) => resolve({ success: false, error: String(err) }));
+  });
+}
+
 export async function validateHenshin({ henshinPath, mode = 'structure', metamodelPath, modelPath, ruleName, parameters = {} }) {
   const repoRoot = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
   const validatorScript = path.join(repoRoot, 'tools', 'henshin-validator', 'validate.mjs');

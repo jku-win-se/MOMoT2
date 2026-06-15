@@ -36,7 +36,8 @@ doc/
   00-architecture-overview.md Full architecture with diagrams
   henshin/                    10-chapter Henshin knowledge base (00–09)
 tools/
-  henshin-validator/          Fast CLI validator (no Docker needed)
+  henshin-validator/          Fast CLI validator for .henshin (no Docker needed)
+  momot-validator/            Fast CLI validator for .momot (Maven setup required)
 .github/prompts/              Reusable agent prompt templates
   henshin-agent.prompt.md     Henshin expert loop
   henshin-loop.prompt.md      Two-tier iterative Henshin fix loop
@@ -127,6 +128,16 @@ Wraps the CLI validator — callable without shell access.
 | `ruleName` | Required for `apply` |
 | `parameters` | String map of rule parameter values |
 
+### 5. `validate_momot`
+
+Wraps the MOMoT CLI validator — callable without shell access.
+
+| Input | Notes |
+|---|---|
+| `momotPath` | Path to `.momot` (required) |
+| `mode` | `"structure"` (default) \| `"semantic"` \| `"compile"` |
+| `projectRoot` | Job root for resolving relative paths (recommended for `semantic` and `compile`) |
+
 ---
 
 ## Preferred Agent Workflow
@@ -141,6 +152,10 @@ Wraps the CLI validator — callable without shell access.
 3. Validate Tier 1 validate_henshin(mode="structure")
                    validate_henshin(mode="semantic", metamodelPath=...)
                    validate_henshin(mode="apply",    ruleName=..., modelPath=...)
+
+3b.Validate Tier 1b validate_momot(mode="structure")
+                    validate_momot(mode="semantic", projectRoot=...)
+                    validate_momot(mode="compile",   projectRoot=...)
 
 4. Execute Tier 2  execute_momot_job(scriptPath, filesBase64)
                    → check exitCode="0", out/objectives/ present
@@ -230,6 +245,39 @@ Rules:
 | `RandomListValue(#["a","b","c"])` | Fixed enumeration of string values |
 | `RandomIntegerValue(min, max)` | Integer range |
 | `RandomStringValue("a","b","c")` | Deprecated — use `RandomListValue` |
+
+### Checklist before every commit
+
+- [ ] Structural validation passes: `node tools/momot-validator/validate.mjs --validate-structure <file>`
+- [ ] Semantic validation passes: `node tools/momot-validator/validate.mjs --validate-semantic <file> --project-root <job-root>`
+- [ ] Compile validation passes: `node tools/momot-validator/validate.mjs --compile <file> --project-root <job-root>`
+- [ ] All `model.file` and `modules` paths resolve relative to the job root
+- [ ] OCL objectives are real expressions, not `{ 0.0 }` placeholders
+
+### CLI validator commands
+
+```bash
+# Tier 1b-a — parse only
+node tools/momot-validator/validate.mjs --validate-structure <file.momot>
+
+# Tier 1b-b — full Xtext validation
+node tools/momot-validator/validate.mjs --validate-semantic <file.momot> --project-root <job-root>
+
+# Tier 1b-c — generate Java and compile
+node tools/momot-validator/validate.mjs --compile <file.momot> --project-root <job-root>
+```
+
+T01 example (from repository root; use full paths, not `...`):
+
+```bash
+node tools/momot-validator/validate.mjs --validate-structure test-suite/T01-stack-balancing/src/at/ac/tuwien/big/momot/examples/stack/StackSearchExample.momot
+
+node tools/momot-validator/validate.mjs --validate-semantic test-suite/T01-stack-balancing/src/at/ac/tuwien/big/momot/examples/stack/StackSearchExample.momot --project-root test-suite/T01-stack-balancing
+
+node tools/momot-validator/validate.mjs --compile test-suite/T01-stack-balancing/src/at/ac/tuwien/big/momot/examples/stack/StackSearchExample.momot --project-root test-suite/T01-stack-balancing
+```
+
+All modes return a single JSON line to stdout. Exit code `0` = success.
 
 ### Module/rule name format in scripts
 

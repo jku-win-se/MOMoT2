@@ -1,7 +1,7 @@
 import { z } from 'zod';
 import { McpServer } from '@modelcontextprotocol/sdk/server/mcp.js';
 import { StdioServerTransport } from '@modelcontextprotocol/sdk/server/stdio.js';
-import { executeMomotJob, generateArtifactsFromEcore, runEndToEnd, buildKnownGoodStackFixture, validateHenshin } from './lib.js';
+import { executeMomotJob, generateArtifactsFromEcore, runEndToEnd, buildKnownGoodStackFixture, validateHenshin, validateMomot } from './lib.js';
 
 const server = new McpServer({ name: 'momot-mcp', version: '1.1.0' });
 
@@ -97,6 +97,26 @@ server.tool(
   },
   async (input) => {
     const result = await validateHenshin(input);
+    return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
+  }
+);
+
+server.tool(
+  'validate_momot',
+  {
+    momotPath: z.string().describe('Path to the .momot file (absolute or CWD-relative).'),
+    mode: z.enum(['structure', 'semantic', 'compile']).default('structure').describe(
+      '"structure": parse the script only. ' +
+      '"semantic": full Xtext validation including file paths and OCL. ' +
+      '"compile": generate Java and compile with javac.'
+    ),
+    projectRoot: z.string().optional().describe(
+      'Job root directory for resolving relative paths in the script (e.g. model/stack.henshin). ' +
+      'Required for semantic and compile when paths are project-relative.'
+    )
+  },
+  async (input) => {
+    const result = await validateMomot(input);
     return { content: [{ type: 'text', text: JSON.stringify(result, null, 2) }] };
   }
 );

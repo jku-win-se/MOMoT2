@@ -51,6 +51,11 @@ import at.ac.tuwien.big.momot.lang.preference.MOMoTPreferences
  */
 class MOMoTValidator extends AbstractMOMoTValidator {
    
+   static String headlessProjectRoot
+   
+   static def setHeadlessProjectRoot(String root) {
+      headlessProjectRoot = root
+   }
    
    static def wsRoot() {
       try {
@@ -74,11 +79,36 @@ class MOMoTValidator extends AbstractMOMoTValidator {
       project?.findMember(relativePath)
    }
    
+   static def scriptParentDir(EObject it) {
+      val uri = it.eResource?.URI
+      if(uri == null)
+         return null
+      val file = new File(uri.toFileString)
+      if(file.parentFile != null)
+         return file.parentFile.absolutePath
+      return null
+   }
+   
+   static def resolveAbsolutePath(EObject it, String relativePath) {
+      if(relativePath == null)
+         return null
+      val direct = new File(relativePath)
+      if(direct.isAbsolute && direct.exists)
+         return direct.absolutePath
+      val member = projectMember(it, relativePath)
+      if(member instanceof IFile && member.exists)
+         return member.fullPath.toString
+      val root = headlessProjectRoot ?: scriptParentDir(it)
+      if(root != null) {
+         val resolved = new File(root, relativePath)
+         if(resolved.exists)
+            return resolved.absolutePath
+      }
+      return null
+   }
+   
    static def projectFileExists(EObject it, String relativePath) {
-      val member = projectMember(relativePath)
-      if(member == null)
-         return false
-      return member instanceof IFile && member.exists
+      resolveAbsolutePath(it, relativePath) != null
    }
    
    override protected addImportUnusedIssues(Map<String, List<XImportDeclaration>> imports) {
@@ -106,8 +136,8 @@ class MOMoTValidator extends AbstractMOMoTValidator {
       if(searchOrchestration.model != null) {
          val path = searchOrchestration.model.path.interpret(typeof(String))
          if(path != null) {
-            val member = searchOrchestration?.model.projectMember(path)
-            if(!(member instanceof IFile && member.exists))
+            val absolutePath = searchOrchestration.model.resolveAbsolutePath(path)
+            if(absolutePath == null)
                error("Model file '" + path + "' does not exist.", 
                   it, 
                   MomotPackage.Literals.SEARCH_ORCHESTRATION__MODEL
@@ -115,7 +145,7 @@ class MOMoTValidator extends AbstractMOMoTValidator {
             else {
                val manager = getManager
                try {
-                  return manager.loadGraph(member.fullPath.toString)
+                  return manager.loadGraph(absolutePath)
                } catch(PackageNotFoundException e) {
                   return null
                } catch(WrappedException ex) {
@@ -136,16 +166,13 @@ class MOMoTValidator extends AbstractMOMoTValidator {
       for(module : modules.elements) {
          var path = module.interpret(typeof(String))
          if(path != null) {
-         	var uri = URI.createURI(new File(path).path.toString, true).toString
-            val member = it.projectMember(uri)
-            if(member instanceof IFile && member.exists)
+            val absolutePath = it.resolveAbsolutePath(path)
+            if(absolutePath != null) {
                try {
-	               	manager.addModule(uri)
-               	} catch(Exception e) {
-//               		error("File '" + member.fullPath.toString + "' not found.",
-//               			searchOrchestration.moduleOrchestration,
-//               			MomotPackage.Literals.MODULE_ORCHESTRATION__MODULES)
-               	}
+                  manager.addModule(absolutePath)
+               } catch(Exception e) {
+               }
+            }
          }
       }
       return manager
@@ -391,8 +418,8 @@ class MOMoTValidator extends AbstractMOMoTValidator {
       if(it != null && model != null && fitnessFunction != null) {
          val path = model.path.interpret(typeof(String))
          if(path != null) {
-            val member = project?.findMember(path)
-            if(!member.exists)
+            val absolutePath = model.resolveAbsolutePath(path)
+            if(absolutePath == null)
                return
             var EObject root
             try {
@@ -403,7 +430,7 @@ class MOMoTValidator extends AbstractMOMoTValidator {
                      val helper = ocl.createOCLHelper
                      if(root == null) {
                         val set = new HenshinResourceSet
-                        val resource = set.getResource(member.fullPath.toString)
+                        val resource = set.getResource(absolutePath)
                         root = resource.contents.get(0)
                      }
                      helper.context = root.eClass
