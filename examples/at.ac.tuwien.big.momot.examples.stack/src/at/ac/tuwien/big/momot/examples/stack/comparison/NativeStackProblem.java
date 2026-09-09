@@ -98,7 +98,7 @@ public class NativeStackProblem extends AbstractProblem {
    public NativeStackProblem(final List<Integer> loads) {
       super(loads.size(), 2, 1);
 
-      this.initialLoads = (Integer[]) loads.toArray();
+      this.initialLoads = loads.toArray(new Integer[0]);
       this.maxLoad = Integer.MIN_VALUE;
       for(final Integer load : loads) {
          if(load > maxLoad) {
@@ -111,7 +111,7 @@ public class NativeStackProblem extends AbstractProblem {
    public void evaluate(final Solution solution) {
       final Integer[] result = apply(solution, getInitialLoads());
       final double standardDeviation = getStandardDeviation(result);
-      solution.setObjective(OBJECTIVE_STANDARD_DEVIATION, standardDeviation);
+      solution.setObjectiveValue(OBJECTIVE_STANDARD_DEVIATION, standardDeviation);
 
       int solutionLength = 0;
       for(int i = 0; i < getNumberOfVariables(); i += 1) {
@@ -120,11 +120,11 @@ public class NativeStackProblem extends AbstractProblem {
             solutionLength++;
          }
       }
-      solution.setObjective(OBJECTIVE_SOLUTION_LENGTH, solutionLength);
+      solution.setObjectiveValue(OBJECTIVE_SOLUTION_LENGTH, solutionLength);
 
       for(final Integer stack : result) {
          if(stack < 0) {
-            solution.setConstraint(CONSTRAINT_NO_NEGATIVE_LOAD, CONSTRAINT_PENALTY);
+            solution.setConstraintValue(CONSTRAINT_NO_NEGATIVE_LOAD, CONSTRAINT_PENALTY);
          }
       }
    }

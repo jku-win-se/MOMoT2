@@ -4,7 +4,7 @@ import java.io.File;
 import java.io.IOException;
 
 import org.moeaframework.core.operator.OnePointCrossover;
-import org.moeaframework.core.operator.TournamentSelection;
+import org.moeaframework.core.selection.TournamentSelection;
 
 import at.ac.tuwien.big.moea.SearchAnalysis;
 import at.ac.tuwien.big.moea.SearchExperiment;

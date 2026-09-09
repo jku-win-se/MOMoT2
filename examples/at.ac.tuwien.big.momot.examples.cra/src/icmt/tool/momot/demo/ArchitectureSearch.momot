@@ -6,7 +6,7 @@ import icmt.tool.momot.demo.architecture.ArchitecturePackage
 import icmt.tool.momot.demo.architecture.ClassModel
 import icmt.tool.momot.demo.architecture.ArchitectureFactory
 import at.ac.tuwien.big.moea.util.MathUtil
-import org.moeaframework.core.operator.TournamentSelection
+import org.moeaframework.core.selection.TournamentSelection
 import org.moeaframework.core.operator.OnePointCrossover
 import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationPlaceholderMutation
 

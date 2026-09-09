@@ -5,7 +5,7 @@ import at.ac.tuwien.big.moea.util.MathUtil;
 import java.util.Arrays;
 import java.util.Comparator;
 
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.comparator.LexicographicalComparator;
 
@@ -13,15 +13,6 @@ import org.moeaframework.core.comparator.LexicographicalComparator;
  * This class is adapted from the Fitness calculation class of
  * jMetalPlus: An enhanced version of the jMetal framework by marlonso
  * https://sourceforge.net/projects/jmetalbymarlonso/
- * <p>
- * This class is dedicated to encapsulating fitness calculation functions. The
- * intention behind is that all relevant fitness calculation schemes can be
- * found in one central class. This way we can avoid duplication of coding
- * efforts. Maintenance will also be easier.
- * <p>
- * All fitness values calculated in this class are to be minimized.
- *
- * @author Marlon
  */
 public class Fitness {
    private static final double BULGE_FITNESS_EPS = 10E-6;
@@ -76,35 +67,17 @@ public class Fitness {
       fitness.nashFitness(referencePoint);
    }
 
-   /**
-    * The {@link NondominatedPopulation} for which fitness values are calculated.
-    */
    private final NondominatedPopulation nondominatedPopulation;
 
-   /**
-    * The number of objectives of the underlying optimization problem.
-    * We assume that all solutions stem from the same problem.
-    */
    private int nObj;
 
-   /**
-    * Standard constructor
-    *
-    * @param nondominatedPopulation
-    *           The {@link NondominatedPopulation} for which all subsequent fitness
-    *           calculations will be performed.
-    */
    public Fitness(final NondominatedPopulation nondominatedPopulation) {
       this.nondominatedPopulation = nondominatedPopulation;
       if(!nondominatedPopulation.isEmpty()) {
-         this.nObj = nondominatedPopulation.get(0).getObjectives().length;
+         this.nObj = nondominatedPopulation.get(0).getNumberOfObjectives();
       }
    }
 
-   /**
-    *
-    * @param extremePoints
-    */
    public void angleFitness(final double[][] extremePoints) {
       final int nExt = extremePoints.length;
 
@@ -113,7 +86,7 @@ public class Fitness {
          final double[][] difference = new double[nExt][nExt];
          for(int i = 0; i < nExt; i++) {
             for(int j = 0; j < nExt; j++) {
-               difference[i][j] = extremePoints[i][j] - s.getObjective(j);
+               difference[i][j] = extremePoints[i][j] - s.getObjectiveValue(j);
             }
             double myNumerator = 0;
             double myDenominator = 0;
@@ -141,9 +114,6 @@ public class Fitness {
       return ANGLE_270 - getLeftBendAngle(solution, leftNeighbor) - getRightBendAngle(solution, rightNeighbor);
    }
 
-   /**
-    * Calculates the bend angles of
-    */
    public void bendAngleFitness() {
       if(nondominatedPopulation.isEmpty()) {
          return;
@@ -160,7 +130,6 @@ public class Fitness {
       final double[] gamma = new double[size];
       final double[] delta = new double[size];
 
-      // Handle the first and last two solution separately
       alpha[0] = ANGLE_270 - getRightBendAngle(nondominatedPopulation.get(0), nondominatedPopulation.get(1));
       beta[0] = alpha[0];
       gamma[0] = ANGLE_270 - getRightBendAngle(nondominatedPopulation.get(0), nondominatedPopulation.get(2));
@@ -207,15 +176,9 @@ public class Fitness {
       }
    }
 
-   /**
-    * Calculates the bulge fitness as stated in the working paper of me and
-    * Prad. The convex hull of individual minima is calculated from
-    * {@link Fitness#nondominatedPopulation}.
-    */
    public void bulgeFitness() {
       final Solution[] chim = obtainCHIM();
 
-      // Calculate minima and maxima
       final double[] minima = new double[nObj];
       final double[] maxima = new double[nObj];
 
@@ -223,34 +186,21 @@ public class Fitness {
          minima[obj] = Double.MAX_VALUE;
          maxima[obj] = Double.MIN_VALUE;
 
-         // Consider all points of the CHIM
          for(int ext = 0; ext < nObj; ext++) {
-            maxima[obj] = Math.max(maxima[obj], chim[ext].getObjective(obj));
-            minima[obj] = Math.min(minima[obj], chim[ext].getObjective(obj));
+            maxima[obj] = Math.max(maxima[obj], chim[ext].getObjectiveValue(obj));
+            minima[obj] = Math.min(minima[obj], chim[ext].getObjectiveValue(obj));
          }
       }
 
       bulgeFitness(minima, maxima);
    }
 
-   /**
-    * Calculates bulge fitness according to the working paper by me and Prad.
-    * Minima and maxima are provided by the user and not computed on the fly.
-    * This is because the CHIM of the first non-dominated front serves as CHIM
-    * for all other fronts as well.
-    *
-    * @param minima
-    *           The individual minima of each objective
-    * @param maxima
-    *           The individual maximum objective values over all minima
-    *           solutions.
-    */
    public void bulgeFitness(final double[] minima, final double[] maxima) {
       for(int curSol = 0; curSol < nondominatedPopulation.size(); curSol++) {
          double sum = 0.0;
          for(int obj = 0; obj < nObj; obj++) {
             if(Math.abs(minima[obj] - maxima[obj]) < BULGE_FITNESS_EPS) {
-               sum += (nondominatedPopulation.get(curSol).getObjective(obj) - minima[obj])
+               sum += (nondominatedPopulation.get(curSol).getObjectiveValue(obj) - minima[obj])
                      / (maxima[obj] - minima[obj]);
             }
          }
@@ -259,131 +209,52 @@ public class Fitness {
       }
    }
 
-   /**
-    * Calculates fitness values for {@link Fitness#nondominatedPopulation} on the basis of
-    * the Chebyshev method, i.e. F = max w*(f_i - u_i) where u is the Utopia
-    * point. The minimum objectives of all solutions in {@link #nondominatedPopulation}
-    * serve as Utopia point.
-    */
    public void chebyshevFitness() {
       chebyshevFitness(MathUtil.colMin(writeObjectivesToMatrix(nondominatedPopulation)));
    }
 
-   /**
-    * Calculates fitness values for {@link Fitness#nondominatedPopulation} on the basis of
-    * the Chebyshev method, i.e. F = max w*(f_i - a_i) where a is the
-    * aspiration point.
-    *
-    * @param aspirationPoint
-    *           The aspiration point (or Utopia point), which is subtracted
-    *           from all objective vector for calculating the fitness values.
-    */
    public void chebyshevFitness(final double[] aspirationPoint) {
       for(final Solution s : nondominatedPopulation) {
-         setFitness(s, MathUtil.max(MathUtil.subtract(s.getObjectives(), aspirationPoint)), KEY_CHEBYSHEV_FITNESS);
+         setFitness(s, MathUtil.max(MathUtil.subtract(s.getObjectiveValues(), aspirationPoint)), KEY_CHEBYSHEV_FITNESS);
       }
    }
 
-   /**
-    * Calculates fitness values for {@link Fitness#nondominatedPopulation} on the basis of
-    * the Chebyshev method, i.e. F = max w*(f_i - a_i) where a is the
-    * aspiration point.
-    *
-    * @param aspirationPoint
-    *           The aspiration point (or Utopia point), which is subtracted
-    *           from all objective vector for calculating the fitness values.
-    * @param weights
-    *           An array of weight vectors, by which each objective difference
-    *           is multiplied. Allows articulating preferences for individual
-    *           objectives.
-    */
    public void chebyshevFitness(final double[] aspirationPoint, final double[] weights) {
       for(final Solution s : nondominatedPopulation) {
-         setFitness(s, MathUtil.max(MathUtil.multiply(weights, MathUtil.subtract(s.getObjectives(), aspirationPoint))),
+         setFitness(s, MathUtil.max(MathUtil.multiply(weights, MathUtil.subtract(s.getObjectiveValues(), aspirationPoint))),
                KEY_CHEBYSHEV_FITNESS);
       }
    }
 
-   /**
-    * /** Calculates fitness values for {@link Fitness#nondominatedPopulation} on the
-    * basis of the Chebyshev method, i.e. F = max w*(f_i - u_i) where u is the
-    * Utopia point. The minimum objectives of all solutions in
-    * {@link #nondominatedPopulation} serve as Utopia point.
-    *
-    * @param weights
-    *           An array of scalar value, by which individual objectives can
-    *           be weighted.
-    */
    public void chebyshevFitness2(final double[] weights) {
       chebyshevFitness(MathUtil.colMin(writeObjectivesToMatrix(nondominatedPopulation)), weights);
    }
 
-   /**
-    * Calculates fitness values using the Cobb-Douglas production function. As
-    * objectives have the same weight, so no exponentiation is performed.
-    */
    public void cobbDouglasFitness() {
       for(final Solution s : nondominatedPopulation) {
-         double product = s.getObjective(0);
+         double product = s.getObjectiveValue(0);
          for(int o = 1; o < nObj; o++) {
-            product *= s.getObjective(o);
+            product *= s.getObjectiveValue(o);
          }
          setFitness(s, product, KEY_COBB_DOUGLAS_FITNESS);
       }
    }
 
-   /**
-    * Calculates fitness values using the Cobb-Douglas production function.
-    * Each objective is raised by a weight that is a real number. Transformed
-    * objectives are then multiplied
-    *
-    * @param weights
-    *           The weights by which objectives are raised
-    */
    public void cobbDouglasFitness(final double[] weights) {
       for(final Solution s : nondominatedPopulation) {
          double product = 1.0;
          for(int o = 0; o < nObj; o++) {
-            product *= Math.pow(s.getObjective(o), weights[o]);
+            product *= Math.pow(s.getObjectiveValue(o), weights[o]);
          }
          setFitness(s, product, KEY_COBB_DOUGLAS_FITNESS);
       }
    }
 
-   /**
-    * Calculates the convergence-diversity rank used in CDEA giving equal
-    * weights to convergence and diversity criteria.
-    *
-    * @param convergence
-    *           An {@link AbstractComparator} that addresses the convergence
-    *           criterion
-    * @param diversity
-    *           An {@link AbstractComparator} that addresses the diversity
-    *           criterion
-    */
    public void convergenceDiversityRanking(final Comparator<Solution> convergence,
          final Comparator<Solution> diversity) {
       convergenceDiversityRanking(convergence, diversity, 1.0, 1.0);
    }
 
-   /**
-    * Calculates the convergence-diversity rank used in CDEA. All solutions are
-    * ranked with respect to convergence and diversity. The
-    * convergence-diversity is the sum of the positions of both solutions in
-    * the convergence and diversity ranking, respectively. The influence of
-    * both ranks be increased or decreased by two additional weight parameters
-    *
-    * @param convergence
-    *           An {@link AbstractComparator} that addresses the convergence
-    *           criterion
-    * @param diversity
-    *           An {@link AbstractComparator} that addresses the diversity
-    *           criterion
-    * @param c
-    *           Weight for the convergence rank
-    * @param d
-    *           Weight for the diversity rank
-    */
    public void convergenceDiversityRanking(final Comparator<Solution> convergence, final Comparator<Solution> diversity,
          final double c, final double d) {
       nondominatedPopulation.sort(convergence);
@@ -398,25 +269,12 @@ public class Fitness {
       }
    }
 
-   /**
-    * Calculates fitness values on the basis of the egalitarian welfare
-    * function. The fitness of a solution corresponds to the maximum of its
-    * objective values.
-    */
    public void egalitarianFitness() {
       for(final Solution s : nondominatedPopulation) {
-         setFitness(s, MathUtil.max(s.getObjectives()), KEY_EGALITARIAN_FITNESS);
+         setFitness(s, MathUtil.max(s.getObjectiveValues()), KEY_EGALITARIAN_FITNESS);
       }
    }
 
-   /**
-    * Calculates the expected marginal utility for a solution at position i in
-    * the {@link Fitness#nondominatedPopulation}.
-    *
-    * @param i
-    *           Index of the solution in {@link Fitness#nondominatedPopulation}.
-    * @return The fitness value according to the utility knee fitness
-    */
    private double expectedMarginalUtility(final int i) {
       return marginalUtilityKneeIntegralFunction(i, getWeightForEqualUtility(i - 1, i + 1))
             - marginalUtilityKneeIntegralFunction(i, getWeightForEqualUtility(i - 1, i))
@@ -424,13 +282,6 @@ public class Fitness {
             - marginalUtilityKneeIntegralFunction(i, getWeightForEqualUtility(i - 1, i + 1));
    }
 
-   /**
-    * Computes the vector holding the best objective values for each objective
-    * in the underlying {@link NondominatedPopulation}.
-    *
-    * @return Vector holding the best objective values for each objective in
-    *         the underlying {@link NondominatedPopulation}.
-    */
    private double[] getBestObjectives() {
       final double[] best = new double[nObj];
       for(int i = 0; i < nObj; i++) {
@@ -439,8 +290,8 @@ public class Fitness {
 
       for(final Solution solution : nondominatedPopulation) {
          for(int i = 0; i < nObj; i++) {
-            if(solution.getObjective(i) < best[i]) {
-               best[i] = solution.getObjective(i);
+            if(solution.getObjectiveValue(i) < best[i]) {
+               best[i] = solution.getObjectiveValue(i);
             }
          }
       }
@@ -452,17 +303,10 @@ public class Fitness {
    }
 
    private double getLeftBendAngle(final Solution solution, final Solution leftNeighbor) {
-      return Math.toDegrees(Math.atan((solution.getObjective(0) - leftNeighbor.getObjective(0))
-            / (leftNeighbor.getObjective(1) - solution.getObjective(1))));
+      return Math.toDegrees(Math.atan((solution.getObjectiveValue(0) - leftNeighbor.getObjectiveValue(0))
+            / (leftNeighbor.getObjectiveValue(1) - solution.getObjectiveValue(1))));
    }
 
-   /**
-    * Method for retrieving the {@link NondominatedPopulation} of this
-    * <code>Fitness</code> instance.
-    *
-    * @return The {@link NondominatedPopulation} of this <code>Fitness</code> instance,
-    *         {@link Fitness#nondominatedPopulation}.
-    */
    public NondominatedPopulation getNondominatedPopulation() {
       return nondominatedPopulation;
    }
@@ -472,39 +316,22 @@ public class Fitness {
    }
 
    private double getRightBendAngle(final Solution solution, final Solution rightNeighbor) {
-      return Math.toDegrees(Math.atan((solution.getObjective(1) - rightNeighbor.getObjective(1))
-            / (rightNeighbor.getObjective(0) - solution.getObjective(0))));
+      return Math.toDegrees(Math.atan((solution.getObjectiveValue(1) - rightNeighbor.getObjectiveValue(1))
+            / (rightNeighbor.getObjectiveValue(0) - solution.getObjectiveValue(0))));
    }
 
-   /**
-    * Calculates the weight that gives both solutions the same utility when
-    * using the utility function lambda * f_1 + (1 - lambda) f_2
-    *
-    * @param i
-    *           Index of solution 1 in {@link Fitness#nondominatedPopulation}
-    * @param j
-    *           Index of solution 2 in {@link Fitness#nondominatedPopulation}
-    * @return The weight giving both solutions the same fitness
-    */
    private double getWeightForEqualUtility(final int i, final int j) {
       final Solution sol1 = nondominatedPopulation.get(i);
       final Solution sol2 = nondominatedPopulation.get(j);
 
-      if(sol1.getObjectives().length != sol2.getObjectives().length) {
+      if(sol1.getNumberOfObjectives() != sol2.getNumberOfObjectives()) {
          throw new RuntimeException("Solutions do not have the same number of objectives");
       }
 
-      return (sol2.getObjective(1) - sol1.getObjective(1))
-            / (sol1.getObjective(0) - sol2.getObjective(0) + sol2.getObjective(1) - sol1.getObjective(1));
+      return (sol2.getObjectiveValue(1) - sol1.getObjectiveValue(1))
+            / (sol1.getObjectiveValue(0) - sol2.getObjectiveValue(0) + sol2.getObjectiveValue(1) - sol1.getObjectiveValue(1));
    }
 
-   /**
-    * Computes the vector holding the worst objective values for each objective
-    * in the underlying {@link NondominatedPopulation}.
-    *
-    * @return Vector holding the worst objective values for each objective in
-    *         the underlying {@link NondominatedPopulation}.
-    */
    public double[] getWorstObjectives() {
       final double[] worst = new double[nObj];
       for(int i = 0; i < nObj; i++) {
@@ -513,125 +340,67 @@ public class Fitness {
 
       for(final Solution solution : nondominatedPopulation) {
          for(int i = 0; i < nObj; i++) {
-            if(solution.getObjective(i) > worst[i]) {
-               worst[i] = solution.getObjective(i);
+            if(solution.getObjectiveValue(i) > worst[i]) {
+               worst[i] = solution.getObjectiveValue(i);
             }
          }
       }
       return worst;
    }
 
-   /**
-    * Calculates the upper or lower integration limit of the utility knee
-    * fitness.
-    *
-    * @param i
-    *           Index of the solution in {@link Fitness#nondominatedPopulation}.
-    * @param alpha
-    *           Integration bound
-    * @return Lower or upper integration limit of the utility knee fitness.
-    */
    private double marginalUtilityKneeIntegralFunction(final int i, final double alpha) {
-      final double f1x = nondominatedPopulation.get(i).getObjective(0);
-      final double f2x = nondominatedPopulation.get(i).getObjective(1);
-      final double f1y = nondominatedPopulation.get(i - 1).getObjective(0);
-      final double f2y = nondominatedPopulation.get(i - 1).getObjective(1);
+      final double f1x = nondominatedPopulation.get(i).getObjectiveValue(0);
+      final double f2x = nondominatedPopulation.get(i).getObjectiveValue(1);
+      final double f1y = nondominatedPopulation.get(i - 1).getObjectiveValue(0);
+      final double f2y = nondominatedPopulation.get(i - 1).getObjectiveValue(1);
 
       final double alphaSquare = 1.0 / 2.0 * Math.pow(alpha, 2);
 
       return alphaSquare * (f1x - f1y) + (1 - alphaSquare) * (f2x - f2y);
    }
 
-   /**
-    * Calculates fitness values according to the max-min notion. Objective are
-    * multiplied by scalar weights provided by the user for prioritizing goals.
-    * The larger the weight, the more important is an individual goal. The
-    * maximum of all weighted objectives then constitutes a solution's fitness
-    * value.
-    *
-    * @param weights
-    *           An array of scalar weights, by which objectives are
-    *           multiplied.
-    */
    public void maxMinFitness(final double[] weights) {
       for(final Solution s : nondominatedPopulation) {
-         setFitness(s, MathUtil.max(MathUtil.multiply(weights, s.getObjectives())), KEY_MAXMIN_FITNESS);
+         setFitness(s, MathUtil.max(MathUtil.multiply(weights, s.getObjectiveValues())), KEY_MAXMIN_FITNESS);
       }
    }
 
-   /**
-    *
-    */
    public void minmaxTradeoffFitness() {
       final double[] best = getBestObjectives();
       final double[] worst = getWorstObjectives();
 
       for(final Solution solution : nondominatedPopulation) {
-         final double[] objectives = solution.getObjectives();
+         final double[] objectives = solution.getObjectiveValues();
          setFitness(solution,
                MathUtil.max(MathUtil.divide(MathUtil.subtract(objectives, best), MathUtil.subtract(worst, objectives))),
                KEY_MINMAX_TRADEOFF_FITNESS);
       }
    }
 
-   /**
-    * Fitness values are chosen as results of the Nash bargaining solution. For
-    * more information, see {@link #nashFitness(double[])}. The worst objective
-    * values of {@link #nondominatedPopulation} are chosen as disagreement point, which is
-    * basically the current best estimate of the Nadir point. Behold that
-    * {@link #nondominatedPopulation} should only contain non-dominated solutions.
-    * Otherwise outliers may perturb the fitness values.
-    */
    public void nashFitness() {
       nashFitness(MathUtil.colMax(writeObjectivesToMatrix(nondominatedPopulation)));
    }
 
-   /**
-    * This fitness function assignment method is based on the Nash bargaining
-    * solution with a user-provided disagreement point. We transformed Nash's
-    * notion for compliance with minimization problems. Objective values are
-    * subtracted from the <code>disagreement point</code> and then multiplied.
-    *
-    * @param disagreementPoint
-    *           In economics, the disagreement point represents the allocation
-    *           of goods if no agreement is reached between the bargaining
-    *           parties. We can regard it as the worst possible outcome. In
-    *           the optimization context, the disagreement point should be the
-    *           vector of the worst objectives a decision maker is willing to
-    *           accept, such he is indifferent between accepting and rejecting
-    *           a solution holding such an objective value. In practical
-    *           applications, it makes sense to use the Nadir point as the
-    *           disagreement point or its current best estimate.
-    */
    public void nashFitness(final double[] disagreementPoint) {
       for(final Solution s : nondominatedPopulation) {
          double fitness = 1.0;
          for(int o = 0; o < nObj; o++) {
-            fitness *= disagreementPoint[o] - s.getObjective(o);
+            fitness *= disagreementPoint[o] - s.getObjectiveValue(o);
          }
          setFitness(s, fitness, KEY_NASH_FITNESS);
       }
    }
 
-   /**
-    * Calculates fitness values by simply adding up all objective values
-    */
    public void objectiveSumFitness() {
       for(final Solution s : nondominatedPopulation) {
          double value = 0.0;
          for(int i = 0; i < s.getNumberOfObjectives(); i++) {
-            value += s.getObjective(i);
+            value += s.getObjectiveValue(i);
          }
          setFitness(s, value, KEY_OBJECTIVE_SUM_FITNESS);
       }
    }
 
-   /**
-    * Calculates the convex hull of individual minima (CHIM) of the
-    * {@link Fitness#nondominatedPopulation}.
-    *
-    * @return
-    */
    public Solution[] obtainCHIM() {
       final Solution[] chim = new Solution[nObj];
 
@@ -653,43 +422,17 @@ public class Fitness {
       return chim;
    }
 
-   /**
-    * The fitness value is the distance of the point holding the smallest
-    * objectives of solutions in {@link #nondominatedPopulation} to the given solution in
-    * objective space. A p-norm is utilized to calculate the distance.
-    *
-    * @param norm
-    *           The exponent used for calculating the p-norm
-    */
    public void pNormFitness(final double norm) {
       pNormFitness(getBestObjectives(), norm);
    }
 
-   /**
-    * Fitness values are calculated as p-norm distances between the solution in
-    * objective space and a utopia point. The utopia point serves as maximum
-    * aspiration level.
-    *
-    * @param utopiaPoint
-    *           An aspiration point holding the best achievable values for
-    *           each objective.
-    * @param norm
-    *           The exponent used for calculating the p-norm
-    */
    public void pNormFitness(final double[] utopiaPoint, final double norm) {
       for(final Solution s : nondominatedPopulation) {
-         setFitness(s, MathUtil.pNorm(MathUtil.subtract(utopiaPoint, s.getObjectives()), norm), KEY_PNORM_FITNESS);
+         setFitness(s, MathUtil.pNorm(MathUtil.subtract(utopiaPoint, s.getObjectiveValues()), norm), KEY_PNORM_FITNESS);
       }
    }
 
-   /**
-    * Calculates proper utilities for each {@link Solution} of
-    * {@link Fitness#nondominatedPopulation}. See
-    * "Theory and Algorithms for Finding Knees" by Shukla et al. for a
-    * mathematical definition of the notion.
-    */
    public void properUtility() {
-      // Delete fitness values from previous iterations
       for(final Solution solution : nondominatedPopulation) {
          setProperUtility(solution, 0.0);
       }
@@ -700,13 +443,11 @@ public class Fitness {
          for(int oth = cur + 1; oth < nondominatedPopulation.size(); oth++) {
             final Solution other = nondominatedPopulation.get(oth);
 
-            final double[] diff = MathUtil.subtract(nondominatedPopulation.get(cur).getObjectives(),
-                  nondominatedPopulation.get(oth).getObjectives());
+            final double[] diff = MathUtil.subtract(nondominatedPopulation.get(cur).getObjectiveValues(),
+                  nondominatedPopulation.get(oth).getObjectiveValues());
             final double max = MathUtil.max(diff);
             final double min = MathUtil.min(diff);
 
-            // if max <= 0 current dominates other
-            // if min >= 0 other dominates current
             if(max > 0 && min < 0) {
                setProperUtility(current, Math.max(getProperUtility(current), -max / min));
                setProperUtility(other, Math.max(getProperUtility(other), -min / max));
@@ -717,19 +458,6 @@ public class Fitness {
       }
    }
 
-   /**
-    * Calculates proper utilities for each {@link Solution} of
-    * {@link Fitness#nondominatedPopulation}, however imposes a minimum threshold. The
-    * proper utility of solutions having a smaller value than
-    * <code>tradeoff</code> is set to <code>tradeoff</code>.
-    *
-    * <p>
-    * <code> solution.properUtility = max(solution.properUtility, tradeoff)</code>
-    *
-    * @param tradeoff
-    *           A minimum threshold underneath all proper utilities are set to
-    *           <code>tradeoff</code>.
-    */
    public void properUtility(final double tradeoff) {
       properUtility();
       for(final Solution sol : nondominatedPopulation) {
@@ -751,33 +479,19 @@ public class Fitness {
       solution.setAttribute(KEY_PROPER_UTILITY, fitness);
    }
 
-   /**
-    * Calculates the utility fitness based on the paper
-    * "Finding knees in multi-objective optimization" by Branke et al.
-    */
    public void utilityKneeFitness() {
       if(nondominatedPopulation.isEmpty()) {
          return;
       }
 
-      // Distinguish between 2D and higher dimensions
       if(nObj == 2) {
          utilityKneeFitness2D();
-         // else
-         // TODO: do something about those weight vectors
-         // utilityKneeFitnessHigherDimensions();
       }
    }
 
-   /**
-    * Calculates fitness values based on the utility knee for two dimensional
-    * problems.
-    */
    private void utilityKneeFitness2D() {
-      // Bring solutions in lexicographical order
       nondominatedPopulation.sort(new LexicographicalComparator());
 
-      // Set fitness of last and first individually
       setFitness(nondominatedPopulation.get(0), Double.MAX_VALUE, KEY_UTILITY_KNEE_FITNESS_2D);
       setFitness(nondominatedPopulation.get(nondominatedPopulation.size() - 1), Double.MAX_VALUE,
             KEY_UTILITY_KNEE_FITNESS_2D);
@@ -788,12 +502,7 @@ public class Fitness {
       }
    }
 
-   /**
-    * Calculates fitness values based on the utility knee for higher
-    * dimensional problems.
-    */
    public void utilityKneeFitnessHigherDimensions(final double[][] lambda) {
-      // Set all fitness values to zero
       for(int i = 0; i < nondominatedPopulation.size(); i++) {
          setFitness(nondominatedPopulation.get(i), 0.0);
       }
@@ -805,7 +514,7 @@ public class Fitness {
          for(int j = 0; j < nondominatedPopulation.size(); j++) {
             fitness[j] = 0.0;
             for(int k = 0; k < element.length; k++) {
-               fitness[j] += nondominatedPopulation.get(j).getObjective(k) * element[k];
+               fitness[j] += nondominatedPopulation.get(j).getObjectiveValue(k) * element[k];
             }
             if(fitness[j] < minFitness) {
                minFitness = fitness[j];
@@ -815,28 +524,12 @@ public class Fitness {
          Arrays.sort(fitness);
          final Solution update = nondominatedPopulation.get(indexMinFitness);
          setFitness(update, getFitness(update) + fitness[1] - minFitness, KEY_UTILITY_KNEE_FITNESS_HIGHER_DIMENSIONS);
-         // update.setFitness(update.getFitness() + 1.0);
-         // String print = "Lambda: ";
-         // for(int a = 0 ; a < lambda[i].length ; a++) {
-         // print += lambda[i][a] + " ";
-         // }
-         // print += "Point: " + update.toString();
-         // System.out.println(print);
-
       }
    }
 
-   /**
-    * Each objective is multiplied by a weight. Weighted objectives are then
-    * summed.
-    *
-    * @param weights
-    *           A array of double values holding the weights by which
-    *           individual objectives are multiplied.
-    */
    public void weightedSumFitness(final double[] weights) {
       for(final Solution s : nondominatedPopulation) {
-         setFitness(s, MathUtil.sum(MathUtil.multiply(s.getObjectives(), weights)), KEY_WEIGHTED_SUM_FITNESS);
+         setFitness(s, MathUtil.sum(MathUtil.multiply(s.getObjectiveValues(), weights)), KEY_WEIGHTED_SUM_FITNESS);
       }
    }
 
@@ -849,12 +542,6 @@ public class Fitness {
       return fitness;
    }
 
-   /**
-    * Copies the objectives of the solution set to a matrix. Each row
-    * represents the objective values of a single solution.
-    *
-    * @return A matrix containing the objectives
-    */
    public double[][] writeObjectivesToMatrix(final NondominatedPopulation population) {
       if(population.size() == 0) {
          return null;
@@ -863,7 +550,7 @@ public class Fitness {
       objectives = new double[population.size()][population.get(0).getNumberOfObjectives()];
       for(int i = 0; i < population.size(); i++) {
          for(int j = 0; j < population.get(0).getNumberOfObjectives(); j++) {
-            objectives[i][j] = population.get(i).getObjective(j);
+            objectives[i][j] = population.get(i).getObjectiveValue(j);
          }
       }
       return objectives;

@@ -22,26 +22,26 @@ import java.util.BitSet;
 import java.util.List;
 import java.util.Random;
 
-import org.moeaframework.Executor;
-import org.moeaframework.Instrumenter;
 import org.moeaframework.algorithm.NSGAII;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.NondominatedSortingPopulation;
-import org.moeaframework.core.Problem;
+import org.moeaframework.algorithm.extension.Frequency;
+import org.moeaframework.analysis.runtime.Instrumenter;
 import org.moeaframework.core.comparator.ParetoDominanceComparator;
 import org.moeaframework.core.operator.CompoundVariation;
 import org.moeaframework.core.operator.OnePointCrossover;
-import org.moeaframework.core.operator.TournamentSelection;
+import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedSortingPopulation;
+import org.moeaframework.core.selection.TournamentSelection;
 import org.moeaframework.core.operator.binary.BitFlip;
+import org.moeaframework.problem.Problem;
 
 public class Comparison {
    private static StackOrchestration orchestration;
 
    public static void compareExecutors(final Integer[] initialLoads, final int populationSize, final int maxEvaluations,
          final String referenceFile, final int nrRuns) throws IOException {
-      final Executor transformationExecutor = createTransformationExecutor(initialLoads, populationSize, maxEvaluations,
+      final SearchExecutor transformationExecutor = createTransformationExecutor(initialLoads, populationSize, maxEvaluations,
             referenceFile);
-      final Executor nativeExecutor = createNativeExecutor(initialLoads, populationSize, maxEvaluations, referenceFile);
+      final SearchExecutor nativeExecutor = createNativeExecutor(initialLoads, populationSize, maxEvaluations, referenceFile);
 
       // File referenceSet = new File(referenceFile);
 
@@ -96,7 +96,7 @@ public class Comparison {
       return graphName;
    }
 
-   public static Executor createNativeExecutor(final Integer[] initialLoads, final int populationSize,
+   public static SearchExecutor createNativeExecutor(final Integer[] initialLoads, final int populationSize,
          final int maxEvaluations, final String referenceFile) {
       final String algorithmName = "NSGAII" + initialLoads.length;
       final Problem problem = new NativeStackProblem(initialLoads);
@@ -104,7 +104,7 @@ public class Comparison {
       DynamicAlgorithmProvider.registerAlgorithm(algorithmName, new AbstractRegisteredAlgorithm<NSGAII>() {
          @Override
          public NSGAII createAlgorithm() {
-            return new NSGAII(problem, new NondominatedSortingPopulation(new ParetoDominanceComparator()), null,
+            return new NSGAII(problem, populationSize, new NondominatedSortingPopulation(new ParetoDominanceComparator()), null,
                   new TournamentSelection(2),
                   new CompoundVariation(new OnePointCrossover(1.0), new BitFlip(0.25), new EmptyFlip(0.15)),
                   new ExtendedRandomInitialization(problem, populationSize));
@@ -113,9 +113,14 @@ public class Comparison {
 
       final Instrumenter instrumenter = new SearchInstrumenter()
             .withProblemClass(problem.getClass(), Arrays.asList(initialLoads)).attachHypervolumeCollector()
-            .withFrequency(populationSize).withReferenceSet(new File(referenceFile));
+            .withFrequency(Frequency.ofEvaluations(populationSize));
+      try {
+         instrumenter.withReferenceSet(new File(referenceFile));
+      } catch(final Exception e) {
+         // ignore
+      }
 
-      final Executor executor = new SearchExecutor().withSameProblemAs(instrumenter).withAlgorithm(algorithmName)
+      final SearchExecutor executor = new SearchExecutor().withSameProblemAs(instrumenter).withAlgorithm(algorithmName)
             .withProperty("populationSize", populationSize).withProperty("maxEvaluations", maxEvaluations)
             .distributeOnAllCores().withProgressListener(new SeedRuntimePrintListener());
 
@@ -134,7 +139,7 @@ public class Comparison {
       return loads;
    }
 
-   public static Executor createTransformationExecutor(final Integer[] initialLoads, final int populationSize,
+   public static SearchExecutor createTransformationExecutor(final Integer[] initialLoads, final int populationSize,
          final int maxEvaluations, final String referenceFile) {
       orchestration = new StackOrchestration(createGraph(initialLoads), initialLoads.length);
 

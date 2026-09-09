@@ -5,8 +5,8 @@ import java.io.IOException;
 import java.util.Arrays;
 import java.util.List;
 
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.PopulationIO;
+import at.ac.tuwien.big.moea.util.PopulationUtil;
+import org.moeaframework.core.population.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.comparator.ParetoDominanceComparator;
 
@@ -86,7 +86,7 @@ public class ResultSaver {
 			approximationSet = populations.get(0);
 		
 		try {
-			PopulationIO.writeObjectives(setObjectives, approximationSet);
+			PopulationUtil.writeObjectives(setObjectives, approximationSet);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

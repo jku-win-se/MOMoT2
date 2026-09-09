@@ -20,10 +20,10 @@ layout: index
 
 The **`main`** branch is the complete MOMoT Eclipse product:
 
-- **Plugins & features** — core engine, MOEA integration, MOMoT configuration language (Xtext), UI, branding, example wizards
-- **Examples** — stack balancing, CRA, class modularization, EMF refactor, restructuring, TSE benchmarks, and more
+- **Plugins & features** — core engine, **MOEA Framework 5.1** integration, MOMoT configuration language (Xtext), UI, branding, example wizards
+- **Examples** — stack balancing, CRA, class modularization, EMF refactor, restructuring, TSE benchmarks (six TSE Java modules are in the Maven reactor)
 - **Update site** — published from `docs/` to GitHub Pages; install in Eclipse via **Help → Install New Software…**
-- **Migration notes** — see [MIGRATION.md](https://github.com/jku-win-se/MOMoT2/blob/main/MIGRATION.md) for the Eclipse 2026-03 / Tycho 4.x modernization
+- **Migration notes** — see [MIGRATION.md](https://github.com/jku-win-se/MOMoT2/blob/main/MIGRATION.md) for Eclipse 2026-03 / Tycho 4.x and the [MOEA 2.12 to 5.1](https://github.com/jku-win-se/MOMoT2/blob/main/MIGRATION.md#7-moea-framework-upgrade-212-to-51) upgrade
 
 **Clone and build:**
 
@@ -94,4 +94,4 @@ Key documentation on `standalone`:
 | Validate Henshin rules locally with the CLI validator | **`standalone`** |
 | Reproduce published case studies with wizards | **`main`** |
 
-Both branches share the same core search engine concepts (EMF, Henshin, MOEA, `.momot` scripts). The **`standalone`** branch trims the Eclipse UI and example surface area in favor of headless execution; **`main`** retains the full research distribution and GitHub Pages site.
+Both branches share the same core search engine concepts (EMF, Henshin, MOEA Framework, `.momot` scripts). On **`main`**, the bundled optimizer is MOEA Framework **5.1**. The **`standalone`** branch trims the Eclipse UI and example surface area in favor of headless execution; **`main`** retains the full research distribution and GitHub Pages site.

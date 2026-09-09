@@ -21,7 +21,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/jcommon-1.0.23.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jfreechart-1.0.19.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/JMetal-4.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/MOEAFramework-2.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/MOEAFramework-5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/rsyntaxtextarea.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

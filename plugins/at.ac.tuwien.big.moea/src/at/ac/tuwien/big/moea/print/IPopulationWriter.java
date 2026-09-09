@@ -14,7 +14,7 @@ package at.ac.tuwien.big.moea.print;
 
 import java.io.PrintStream;
 
-import org.moeaframework.core.Population;
+import org.moeaframework.core.population.Population;
 import org.moeaframework.core.Solution;
 
 public interface IPopulationWriter<S extends Solution> {

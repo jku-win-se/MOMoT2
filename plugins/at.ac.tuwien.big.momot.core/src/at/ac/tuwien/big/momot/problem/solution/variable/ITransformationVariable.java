@@ -15,7 +15,7 @@ package at.ac.tuwien.big.momot.problem.solution.variable;
 import org.eclipse.emf.henshin.interpreter.Engine;
 import org.eclipse.emf.henshin.interpreter.UnitApplication;
 import org.eclipse.emf.henshin.model.Parameter;
-import org.moeaframework.core.Variable;
+import org.moeaframework.core.variable.Variable;
 
 public interface ITransformationVariable extends UnitApplication, Variable, Comparable<ITransformationVariable> {
    @Override

@@ -1,6 +1,6 @@
 package at.ac.tuwien.big.moea.search.algorithm.provider;
 
-import org.moeaframework.core.Algorithm;
+import org.moeaframework.algorithm.Algorithm;
 
 public abstract class AbstractRegisteredAlgorithm<A extends Algorithm> implements IRegisteredAlgorithm<A> {
    protected boolean isRegistered = false;

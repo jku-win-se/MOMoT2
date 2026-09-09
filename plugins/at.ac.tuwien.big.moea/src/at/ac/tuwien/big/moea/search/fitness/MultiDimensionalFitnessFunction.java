@@ -1,15 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Vienna University of Technology.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- * Martin Fleck (Vienna University of Technology) - initial API and implementation
- *
- * Initially developed in the context of ARTIST EU project www.artist-project.eu
- *******************************************************************************/
 package at.ac.tuwien.big.moea.search.fitness;
 
 import at.ac.tuwien.big.moea.problem.solution.SearchSolution;
@@ -24,9 +12,6 @@ import java.util.List;
 import org.moeaframework.core.Solution;
 
 public class MultiDimensionalFitnessFunction<T extends Solution> implements IMultiDimensionalFitnessFunction<T> {
-
-   // protected Map<String, IFitnessDimension<T>> objectives;
-   // protected Map<String, IFitnessDimension<T>> constraints;
 
    protected List<IFitnessDimension<T>> objectives;
    protected List<IFitnessDimension<T>> constraints;
@@ -59,19 +44,19 @@ public class MultiDimensionalFitnessFunction<T extends Solution> implements IMul
       for(final IFitnessDimension<T> dimension : constraints) {
          if(!failedConstraint) {
             final double constraintEvaluation = evaluate(dimension, solution);
-            solution.setConstraint(i++, constraintEvaluation);
+            solution.setConstraintValue(i++, constraintEvaluation);
             failedConstraint = IFitnessDimension.CONSTRAINT_OK != constraintEvaluation;
          } else {
-            solution.setConstraint(i++, IFitnessDimension.CONSTRAINT_VIOLATED);
+            solution.setConstraintValue(i++, IFitnessDimension.CONSTRAINT_VIOLATED);
          }
       }
 
       i = 0;
       for(final IFitnessDimension<T> dimension : objectives) {
          if(!failedConstraint) {
-            solution.setObjective(i++, evaluate(dimension, solution));
+            solution.setObjectiveValue(i++, evaluate(dimension, solution));
          } else {
-            solution.setObjective(i++, IFitnessDimension.CONSTRAINT_VIOLATED);
+            solution.setObjectiveValue(i++, IFitnessDimension.CONSTRAINT_VIOLATED);
          }
       }
 
@@ -136,7 +121,7 @@ public class MultiDimensionalFitnessFunction<T extends Solution> implements IMul
    }
 
    protected double getAggregateFitness(final Solution solution) {
-      return MathUtil.getSum(solution.getObjectives(), solution.getConstraints());
+      return MathUtil.getSum(solution.getObjectiveValues(), solution.getConstraintValues());
    }
 
    protected IFitnessDimension<T> getByName(final String name, final Iterable<IFitnessDimension<T>> list) {

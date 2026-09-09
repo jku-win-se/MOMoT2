@@ -6,7 +6,7 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 
 import org.eclipse.emf.henshin.interpreter.EGraph;
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 
 import at.ac.tuwien.big.momot.TransformationSearchOrchestration;

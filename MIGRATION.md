@@ -1,6 +1,6 @@
 # Migration Guide
 
-This repository was migrated to work with newer Eclipse/Tycho/Xtext tooling and a modern Java 17+ development setup. This file summarizes the changes made across the sessions so the rationale is documented in one place.
+This repository was migrated to work with newer Eclipse/Tycho/Xtext tooling, a modern Java 17+ development setup, and **MOEA Framework 5.1** (from 2.12). This file summarizes the changes so the rationale is documented in one place.
 
 ## What Changed
 
@@ -44,9 +44,8 @@ This repository was migrated to work with newer Eclipse/Tycho/Xtext tooling and 
 The TSE examples under [examples/tse](examples/tse) were migrated to a newer baseline.
 
 #### Java level update
-- All TSE bundles were raised from `JavaSE-1.7` to `JavaSE-1.8` in their manifests.
-- Their JDT classpath containers were also updated from `JavaSE-1.7` to `JavaSE-1.8`.
-- The compiler preferences were updated from source/compliance/target `1.7` to `1.8`.
+- All TSE bundles were first raised from `JavaSE-1.7` to `JavaSE-1.8`, then to `JavaSE-17` to match the rest of the reactor (source/target 17, JDK 21).
+- Their JDT classpath containers and compiler preferences follow the same Java 17 baseline.
 
 #### Apache Commons migration
 - Usage of Apache Commons Lang 2.x was migrated to Commons Lang 3.
@@ -77,14 +76,40 @@ The TSE examples under [examples/tse](examples/tse) were migrated to a newer bas
 - Several Sirius/AIRD and generated-model resources were refreshed by the tooling during the migration.
 - These updates are not behavior changes; they are compatibility-oriented file format refreshes caused by the newer Eclipse stack.
 
+### 7. MOEA Framework upgrade (2.12 to 5.1)
+
+MOMoT’s search engine used to ship **MOEA Framework 2.12** (2016-era). The bundled library is now **[MOEA Framework 5.1](https://github.com/MOEAFramework/MOEAFramework/releases/tag/v5.1)** (`plugins/at.ac.tuwien.big.moea/lib/MOEAFramework-5.1.jar`). This is a breaking upgrade of the optimization runtime, not a JAR drop-in.
+
+#### Why upgrade
+2.12 is unmaintained. 5.x is the current line (5.0 in January 2025, 5.1 in June 2025) and is what new MOEA documentation and algorithms target. For MOMoT that means:
+
+- **Actively maintained algorithms and indicators** — NSGA-II/III, ε-MOEA, SPEA2, SMS-EMOA, and quality indicators keep receiving fixes instead of freezing on a decade-old snapshot.
+- **Typed objectives and constraints** — 5.0 introduces `Objective` / `Constraint` (including explicit minimize vs maximize). Fitness is written with `setObjectiveValue` / `setObjectiveValues` instead of treating `getObjective(int)` as a `double`.
+- **Clearer package layout** — populations live in `org.moeaframework.core.population`, selection in `org.moeaframework.core.selection` (`TournamentSelection` moved off `core.operator`), runtime collectors in `org.moeaframework.analysis.runtime`. Import errors after the upgrade are almost always a package move.
+- **Explicit algorithm configuration** — constructors such as `NSGAII` and `RandomSearch` take `populationSize` (NSGA-III populations take `NormalBoundaryDivisions`). Search size is no longer implied by a side-channel.
+- **Experiment APIs that match 5.x** — `Executor` and `Analyzer` were removed. MOMoT’s `SearchExecutor` is a standalone runner (checkpointing, instrumentation, fresh algorithm instance per seed). `SearchAnalyzer` uses `IndicatorStatistics`.
+- **Java 17 alignment** — 5.x is a modern Java library, which matches this branch’s JDK 21 / source 17 toolchain instead of a Java 7-era 2.12 JAR.
+- **5.1 extras** — parallel sample evaluation (`Samples.distributeAll`), a simpler data-store API, and plot builders. MOMoT does not have to use every 5.1 surface, but the bundled JAR is current.
+
+#### Engine changes
+- Bundle metadata (`build.properties`, `META-INF/MANIFEST.MF`, `.classpath`) now references `MOEAFramework-5.1.jar` and exports the 5.x packages.
+- `SearchExecutor` no longer extends `org.moeaframework.Executor`.
+- `SearchAnalyzer` no longer extends `org.moeaframework.Analyzer`.
+- `PopulationUtil` replaced removed `PopulationIO`; variables implement 5.x `getName` / `getDefinition` / `encode` / `decode`; mutations implement `Mutation.mutate(Solution)`.
+- Algorithm factories (`EvolutionaryAlgorithmFactory`) pass `populationSize` into `NSGAII`, `RandomSearch`, `EpsilonMOEA`, `SPEA2`, `PESA2`, and `SMSEMOA`.
+
+#### Examples and DSL
+All in-reactor examples and `.momot` scripts use 5.1 packages (`org.moeaframework.core.selection.TournamentSelection`, `org.moeaframework.core.population.*`). TSE Java sources (`RDGExample`, `RDGExperiment`, `RDGProblem`, `MOMoTSearch`, …) use the same constructors and `setObjectiveValue`.
+
+The six TSE Java bundles are now Maven/Tycho modules listed in [`examples/pom.xml`](examples/pom.xml). The ATL-based `tse.resources` bundle still has a `pom.xml` but is **not** a reactor module (it needs ATL from the target platform at runtime).
+
 ## Validation
-- Full reactor validation passed with:
-  - `mvn -DskipTests=true verify`
-- Result:
-  - `BUILD SUCCESS`
-  - 22/22 reactor modules completed successfully
+- Toolchain: JDK 21, Maven 3.9+, Tycho 4.0.10, Eclipse target platform `2026-03`.
+- Reactor compile includes the engine plugins, IDE tooling, tests, the six original examples, and the six TSE Java modules.
+- Set the JVM working directory to the example project root before running a main (relative `model/`, `data/`, `output/` paths).
 
 ## Notes
-- The migration intentionally favors compatibility with newer Eclipse tooling over preserving legacy build metadata that was no longer needed.
+- The migration intentionally favors compatibility with newer Eclipse tooling and a current MOEA runtime over preserving legacy build metadata that was no longer needed.
 - Some generated or serialized modeling artifacts changed format as a side effect of opening/saving them with newer Eclipse components.
 - If Eclipse still shows stale markers after pulling these changes, refresh the projects and run a clean build in the IDE.
+- Do not mix MOEA 2.12 imports (`org.moeaframework.core.operator.TournamentSelection`, `org.moeaframework.Executor`, `setObjective(int, double)`) with this branch.

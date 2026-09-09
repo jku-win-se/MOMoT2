@@ -34,10 +34,10 @@ import java.util.Random;
 import org.eclipse.emf.henshin.interpreter.EGraph;
 import org.eclipse.emf.henshin.model.resource.HenshinResourceSet;
 import org.moeaframework.algorithm.NSGAII;
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.operator.OnePointCrossover;
-import org.moeaframework.core.operator.TournamentSelection;
+import org.moeaframework.core.selection.TournamentSelection;
 
 public class ModularizationSearch {
    private static final int POPULATION_SIZE = 100;

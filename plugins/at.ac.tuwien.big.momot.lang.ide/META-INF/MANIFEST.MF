@@ -1,0 +1,14 @@
+Manifest-Version: 1.0
+Bundle-ManifestVersion: 2
+Bundle-Name: at.ac.tuwien.big.momot.lang.ide
+Bundle-SymbolicName: at.ac.tuwien.big.momot.lang.ide;singleton:=true
+Bundle-Version: 2.0.0.qualifier
+Bundle-RequiredExecutionEnvironment: JavaSE-17
+Bundle-ActivationPolicy: lazy
+Export-Package: at.ac.tuwien.big.momot.lang.ide.contentassist.antlr,
+ at.ac.tuwien.big.momot.lang.ide.contentassist.antlr.internal
+Require-Bundle: at.ac.tuwien.big.momot.lang,
+ org.eclipse.xtext.ide,
+ org.eclipse.xtext.xbase.ide,
+ org.antlr.runtime
+Automatic-Module-Name: at.ac.tuwien.big.momot.lang.ide

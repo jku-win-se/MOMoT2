@@ -56,9 +56,9 @@ import org.eclipse.xtext.xbase.XStringLiteral
 import org.eclipse.xtext.xbase.jvmmodel.AbstractModelInferrer
 import org.eclipse.xtext.xbase.jvmmodel.IJvmDeclaredTypeAcceptor
 import org.eclipse.xtext.xbase.jvmmodel.JvmTypesBuilder
-import org.moeaframework.analysis.collector.Collector
-import org.moeaframework.core.Algorithm
-import org.moeaframework.core.Population
+import org.moeaframework.algorithm.Algorithm
+import org.moeaframework.analysis.runtime.Collector
+import org.moeaframework.core.population.Population
 import org.moeaframework.util.progress.ProgressListener
 
 import at.ac.tuwien.big.moea.experiment.analyzer.kneepoint.PopulationAnalyzer

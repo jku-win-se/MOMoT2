@@ -27,7 +27,7 @@ import java.util.Random;
 import org.eclipse.emf.common.util.URI;
 import org.eclipse.emf.henshin.interpreter.EGraph;
 import org.moeaframework.core.operator.OnePointCrossover;
-import org.moeaframework.core.operator.TournamentSelection;
+import org.moeaframework.core.selection.TournamentSelection;
 
 public class ModularizationComparison {
    protected static final String INPUT_MODEL = "data/input/models/mtunis_module.xmi";

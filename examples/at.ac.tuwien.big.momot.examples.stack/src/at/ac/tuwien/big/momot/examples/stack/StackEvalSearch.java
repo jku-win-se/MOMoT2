@@ -25,10 +25,11 @@ import java.util.List;
 
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.algorithm.NSGAII;
-import org.moeaframework.algorithm.ReferencePointNondominatedSortingPopulation;
+import org.moeaframework.core.population.ReferencePointNondominatedSortingPopulation;
 import org.moeaframework.core.operator.CompoundVariation;
 import org.moeaframework.core.operator.OnePointCrossover;
-import org.moeaframework.core.operator.TournamentSelection;
+import org.moeaframework.core.selection.TournamentSelection;
+import org.moeaframework.util.weights.NormalBoundaryDivisions;
 
 public class StackEvalSearch {
    private static final int SOLUTION_LENGTH = 8;
@@ -73,7 +74,7 @@ public class StackEvalSearch {
       search.addAlgorithm("NSGA-II", new AbstractRegisteredAlgorithm<NSGAII>() {
          @Override
          public NSGAII createAlgorithm() {
-            return new NSGAII(search.createProblem(), search.createSortingPopulation(),
+            return new NSGAII(search.createProblem(), POPULATION_SIZE, search.createSortingPopulation(),
                   search.createEpsilonBoxArchive(),
                   new TournamentSelection(2), new CompoundVariation(new OnePointCrossover(1.0),
                         new TransformationParameterMutation(0.25, manager), new TransformationPlaceholderMutation(0.1)),
@@ -84,8 +85,8 @@ public class StackEvalSearch {
       search.addAlgorithm("NSGA-III", new AbstractRegisteredAlgorithm<NSGAII>() {
          @Override
          public NSGAII createAlgorithm() {
-            return new NSGAII(search.createProblem(),
-                  new ReferencePointNondominatedSortingPopulation(search.getProblem().getNumberOfObjectives(), 0, 4),
+            return new NSGAII(search.createProblem(), POPULATION_SIZE,
+                  new ReferencePointNondominatedSortingPopulation(search.getProblem().getNumberOfObjectives(), new NormalBoundaryDivisions(4)),
                   search.createEpsilonBoxArchive(),
                   new TournamentSelection(2), new CompoundVariation(new OnePointCrossover(1.0),
                         new TransformationParameterMutation(0.25, manager), new TransformationPlaceholderMutation(0.1)),
@@ -96,7 +97,7 @@ public class StackEvalSearch {
       search.addAlgorithm("EpsilonMOEA", new AbstractRegisteredAlgorithm<EpsilonMOEA>() {
          @Override
          public EpsilonMOEA createAlgorithm() {
-            return new EpsilonMOEA(search.createProblem(), search.createPopulation(),
+            return new EpsilonMOEA(search.createProblem(), POPULATION_SIZE, search.createPopulation(),
                   search.createEpsilonBoxArchive(0.02),
                   new TournamentSelection(2), new CompoundVariation(new OnePointCrossover(1.0),
                         new TransformationParameterMutation(0.25, manager), new TransformationPlaceholderMutation(0.1)),
@@ -109,6 +110,7 @@ public class StackEvalSearch {
       // public RandomSearch createAlgorithm() {
       // return new RandomSearch(
       // search.createProblem(),
+      // POPULATION_SIZE,
       // search.createPopulationGenerator(POPULATION_SIZE),
       // search.createArchive());
       // }

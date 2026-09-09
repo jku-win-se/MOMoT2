@@ -19,7 +19,7 @@ import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.moeaframework.core.Population;
+import org.moeaframework.core.population.Population;
 import org.moeaframework.core.Solution;
 
 public class PopulationWriter<S extends Solution> implements IPopulationWriter<S> {

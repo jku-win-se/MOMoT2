@@ -24,11 +24,11 @@ import at.ac.tuwien.big.moea.search.solution.generator.solution.ISolutionGenerat
 
 import java.util.List;
 
-import org.moeaframework.core.Algorithm;
-import org.moeaframework.core.EpsilonBoxDominanceArchive;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.NondominatedSortingPopulation;
-import org.moeaframework.core.Population;
+import org.moeaframework.algorithm.Algorithm;
+import org.moeaframework.core.population.EpsilonBoxDominanceArchive;
+import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedSortingPopulation;
+import org.moeaframework.core.population.Population;
 import org.moeaframework.core.Solution;
 
 public interface ISearchOrchestration<S extends Solution> {

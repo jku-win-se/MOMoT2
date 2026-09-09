@@ -1,5 +1,6 @@
 module at.ac.tuwien.big.momot.lang.GenerateMOMoT
 
+import org.eclipse.emf.mwe2.runtime.workflow.Workflow
 import org.eclipse.xtext.xtext.generator.*
 import org.eclipse.xtext.xtext.generator.model.project.*
 
@@ -8,34 +9,38 @@ var projectName = "at.ac.tuwien.big.momot.lang"
 var rootPath = ".."
 var encoding = "UTF-8"
 
-XtextGenerator {
-      configuration = {
-         project = StandardProjectConfig {
-            baseName = projectName
-            rootPath = rootPath
-            runtimeTest = {
-               enabled = false
-            }
-            eclipsePlugin = {
-               enabled = true
-            }
-            eclipsePluginTest = {
-               enabled = false
-            }
-            createEclipseMetaData = true
-         }
-         code = {
-            encoding = encoding
-            lineDelimiter = "\n"
-            preferXtendStubs = true
-         }
-      }
-      language = StandardLanguage {
-         name = "at.ac.tuwien.big.momot.lang.MOMoT"
-         fileExtensions = fileExtensions
-         serializer = {
-            generateStub = false
-         }
-      }
+Workflow {
+	component = XtextGenerator {
+		configuration = {
+			project = StandardProjectConfig {
+				baseName = projectName
+				rootPath = rootPath
+				runtimeTest = {
+					enabled = false
+				}
+				genericIde = {
+					enabled = true
+				}
+				eclipsePlugin = {
+					enabled = true
+				}
+				eclipsePluginTest = {
+					enabled = false
+				}
+				createEclipseMetaData = false
+			}
+			code = {
+				encoding = encoding
+				lineDelimiter = "\n"
+				preferXtendStubs = true
+			}
+		}
+		language = StandardLanguage {
+			name = "at.ac.tuwien.big.momot.lang.MOMoT"
+			fileExtensions = fileExtensions
+			serializer = {
+				generateStub = false
+			}
+		}
+	}
 }
-

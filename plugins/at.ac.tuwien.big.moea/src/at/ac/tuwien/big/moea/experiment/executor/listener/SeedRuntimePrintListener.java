@@ -36,14 +36,18 @@ public class SeedRuntimePrintListener extends AbstractProgressListener {
       }
 
       if(isSeedFinished(event)) {
-         seedWatch.stop();
+         if(seedWatch.isStarted() && !seedWatch.isStopped()) {
+            seedWatch.stop();
+         }
          println("Run " + event.getCurrentSeed() + " of " + event.getTotalSeeds() + " terminated after " + seedWatch
                + " (" + seedWatch.getTime() + " ms).");
          seedWatch.reset();
       }
 
       if(isFinished(event)) {
-         totalWatch.stop();
+         if(totalWatch.isStarted() && !totalWatch.isStopped()) {
+            totalWatch.stop();
+         }
          println("Total runtime for " + event.getTotalSeeds() + " seeds: " + totalWatch + " (" + totalWatch.getTime()
                + " ms).");
          totalWatch.reset();

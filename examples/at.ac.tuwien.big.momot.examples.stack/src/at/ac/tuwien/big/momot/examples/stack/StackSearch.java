@@ -16,7 +16,7 @@ import at.ac.tuwien.big.momot.search.algorithm.operator.mutation.TransformationP
 import java.io.IOException;
 
 import org.moeaframework.core.operator.OnePointCrossover;
-import org.moeaframework.core.operator.TournamentSelection;
+import org.moeaframework.core.selection.TournamentSelection;
 
 public class StackSearch {
    private static final int SOLUTION_LENGTH = 5;

@@ -1,6 +1,6 @@
 package at.ac.tuwien.big.momot.examples.tse.rdg.util;
 
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 
 import at.ac.tuwien.big.momot.examples.tse.rdg.metric.RDGTransformationMetrics;

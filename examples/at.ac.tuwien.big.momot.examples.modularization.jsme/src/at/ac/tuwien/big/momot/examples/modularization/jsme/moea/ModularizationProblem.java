@@ -83,14 +83,14 @@ public class ModularizationProblem extends AbstractProblem {
 
       final ModelMetrics metrics = this.calculator.calculate(modularization);
 
-      solution.setObjective(OBJECTIVE_COUPLING, metrics.coupling);
-      solution.setObjective(OBJECTIVE_COHESION, metrics.cohesion * -1);
-      solution.setObjective(OBJECTIVE_NRMODULES, metrics.nrModules * -1);
-      solution.setObjective(OBJECTIVE_MQ, metrics.modularizationQuality * -1);
-      solution.setObjective(OBJECTIVE_MINMAXDIFF, metrics.minMaxDiff);
+      solution.setObjectiveValue(OBJECTIVE_COUPLING, metrics.coupling);
+      solution.setObjectiveValue(OBJECTIVE_COHESION, metrics.cohesion * -1);
+      solution.setObjectiveValue(OBJECTIVE_NRMODULES, metrics.nrModules * -1);
+      solution.setObjectiveValue(OBJECTIVE_MQ, metrics.modularizationQuality * -1);
+      solution.setObjectiveValue(OBJECTIVE_MINMAXDIFF, metrics.minMaxDiff);
 
-      solution.setConstraint(CONSTRAINT_EMPTY_MODULES, metrics.nrEmptyModules);
-      solution.setConstraint(CONSTRAINT_UNASSIGNED_CLASSES, metrics.nrUnassignedClasses);
+      solution.setConstraintValue(CONSTRAINT_EMPTY_MODULES, metrics.nrEmptyModules);
+      solution.setConstraintValue(CONSTRAINT_UNASSIGNED_CLASSES, metrics.nrUnassignedClasses);
 
       solution.setAttribute(ATTRIBUTE_MODULARIZATION, modularization);
       solution.setAttribute(ATTRIBUTE_METRICS, metrics);

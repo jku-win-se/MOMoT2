@@ -14,9 +14,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 
-import org.moeaframework.Instrumenter;
 import org.moeaframework.analysis.collector.Accumulator;
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.analysis.runtime.Instrumenter;
+import org.moeaframework.core.population.NondominatedPopulation;
 
 public class SearchCollectorHelper {
 
@@ -46,8 +46,6 @@ public class SearchCollectorHelper {
       final List<Accumulator> accumulators = new ArrayList<>();
       if(instrumenter instanceof SearchInstrumenter) {
          accumulators.addAll(((SearchInstrumenter) instrumenter).getAccumulators());
-      } else {
-         accumulators.add(instrumenter.getLastAccumulator());
       }
 
       try {
@@ -90,7 +88,11 @@ public class SearchCollectorHelper {
          return new HashSet<>();
       }
 
-      return executors.next().getInstrumenter().getLastAccumulator().keySet();
+      final SearchExecutor exec = executors.next();
+      if(exec.getInstrumenter() instanceof SearchInstrumenter) {
+         return ((SearchInstrumenter) exec.getInstrumenter()).getLastAccumulator().keySet();
+      }
+      return new HashSet<>();
    }
 
    public Map<SearchExecutor, Map<Accumulator, List<Serializable>>> getCollectedData(final String key) {

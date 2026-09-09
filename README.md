@@ -2,7 +2,7 @@
 
 [![Project Page](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://jku-win-se.github.io/MOMoT2/)
 
-MOMoT combines model-driven engineering (EMF/Henshin) with search-based optimization (MOEA Framework) to solve complex problems on the model level.
+MOMoT combines model-driven engineering (EMF/Henshin) with search-based optimization ([MOEA Framework 5.1](https://github.com/MOEAFramework/MOEAFramework/releases/tag/v5.1)) to solve complex problems on the model level.
 
 **Project page:** https://jku-win-se.github.io/MOMoT2/
 
@@ -37,7 +37,7 @@ Xtext and Henshin dependencies are resolved automatically from the update site.
 
 | Path | Description |
 | --- | --- |
-| `plugins/` | MOMoT core, MOEA bridge, configuration language, UI |
+| `plugins/` | MOMoT core, MOEA 5.1 bridge (`at.ac.tuwien.big.moea`), configuration language, UI |
 | `features/` | Eclipse feature definitions |
 | `examples/` | Case-study examples (stack, CRA, modularization, TSE, …) |
 | `releng/` | Update site and release engineering |
@@ -67,7 +67,7 @@ This copies `releng/at.ac.tuwien.big.momot.update/target/repository/` into `docs
 
 ### Migration
 
-This branch was modernized for Eclipse 2026-03 / Tycho 4.x. See [MIGRATION.md](MIGRATION.md).
+This branch was modernized for Eclipse 2026-03 / Tycho 4.x and upgraded from **MOEA Framework 2.12 to 5.1**. The 5.x runtime is actively maintained, uses typed objectives/constraints, a clearer package layout, and explicit algorithm configuration (for example `populationSize` on NSGA-II/III and Random Search). MOMoT’s `SearchExecutor` / `SearchAnalyzer` were rewritten for the APIs that replaced the removed `Executor` and `Analyzer` classes. Details: [MIGRATION.md](MIGRATION.md#7-moea-framework-upgrade-212-to-51).
 
 ---
 

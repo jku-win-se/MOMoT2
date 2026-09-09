@@ -1,15 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Vienna University of Technology.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- * Martin Fleck (Vienna University of Technology) - initial API and implementation
- *
- * Initially developed in the context of ARTIST EU project www.artist-project.eu
- *******************************************************************************/
 package at.ac.tuwien.big.moea.problem.solution;
 
 import at.ac.tuwien.big.moea.util.CastUtil;
@@ -21,14 +9,13 @@ import org.moeaframework.core.Solution;
 public class SearchSolution extends Solution {
    private static final long serialVersionUID = 1489801128861913870L;
 
-   /**
-    * The aggregated fitness of a solution is the sum of all objective values
-    * plus the sum of all constraint values.
-    */
    public static final String ATTRIBUTE_AGGREGATED_FITNESS = "AggregatedFitness";
 
    public SearchSolution(final double[] objectives) {
-      super(objectives);
+      super(0, objectives != null ? objectives.length : 0);
+      if(objectives != null) {
+         setObjectiveValues(objectives);
+      }
    }
 
    public SearchSolution(final int numberOfVariables, final int numberOfObjectives) {

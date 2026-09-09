@@ -10,6 +10,7 @@ In this framework, problems are represented through Ecore meta-models and their 
 These problem instances can be manipulated through dedicated model transformations modeled as graph transformation rules Henshin.
 Desired and prohibited characteristics (objectives and constraints) of the output model can be specified using OCL or a Java-like expression language (Xbase).
 Search-based optimization techniques can then be used to search for a Pareto-optimal set of transformation orchestrations, i.e., an ordered sequence of transformations and their parameters, to produce models with these characteristics.
+Optimization is driven by **[MOEA Framework 5.1](https://github.com/MOEAFramework/MOEAFramework/releases/tag/v5.1)** (upgraded from 2.12): a maintained multi-objective library with typed objectives and constraints, current NSGA-II/III and ε-MOEA implementations, and explicit algorithm configuration. See the [migration notes](https://github.com/jku-win-se/MOMoT2/blob/main/MIGRATION.md#7-moea-framework-upgrade-212-to-51) for what changed in MOMoT.
 </div>
 
 ### Repository branches
@@ -45,7 +46,7 @@ The MCP server and agent integration on the **standalone** branch were developed
 At this point, we would like to thank the developers of the following frameworks, which we have used in order to develop MOMoT:
 
 * [Eclipse Henshin](http://www.eclipse.org/henshin/): Henshin is used to formulate the transformation units to manipulate the model.
-* [MOEA Framework](http://moeaframework.org/): The MOEA framework provides the basis for formulating the transformation orchestration problem as an optimization problem. It already supports a lot of algorithms which are re-used in MOMoT.
+* [MOEA Framework 5.1](http://moeaframework.org/): Provides the algorithms (NSGA-II, NSGA-III, ε-MOEA, and others) used to search over transformation orchestrations. Version 5.x adds typed `Objective`/`Constraint` values, a reorganized package structure, `IndicatorStatistics` in place of the old `Analyzer`, and continued maintenance that 2.12 no longer receives.
 * [Eclipse OCL Project](http://projects.eclipse.org/projects/modeling.mdt.ocl): The OCL Project is used to evaluate objectives and constraints specified in the OCL language.
 * [Eclipse Xbase](https://wiki.eclipse.org/Xbase): Xbase is a statically typed expression language for Java, that is implemented in Xtext and we have used it to implement the configuration language.
 

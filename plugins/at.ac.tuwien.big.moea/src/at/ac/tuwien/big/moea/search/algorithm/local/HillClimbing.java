@@ -15,7 +15,7 @@ package at.ac.tuwien.big.moea.search.algorithm.local;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.moeaframework.core.Problem;
+import org.moeaframework.problem.Problem;
 import org.moeaframework.core.Solution;
 
 public class HillClimbing<S extends Solution> extends AbstractLocalSearchAlgorithm<S> {

@@ -7,8 +7,6 @@ import java.util.Set;
 import java.util.TreeSet;
 
 import org.apache.commons.math3.stat.descriptive.UnivariateStatistic;
-import org.moeaframework.Analyzer;
-import org.moeaframework.Analyzer.AlgorithmResult;
 
 public class SearchAnalyzerResults {
 
@@ -18,25 +16,7 @@ public class SearchAnalyzerResults {
       this.algorithmResults = new ArrayList<>();
    }
 
-   public SearchAnalyzerResults(final Analyzer.AnalyzerResults results) {
-      this();
-      if(results == null) {
-         return;
-      }
-
-      for(final String algorithm : results.getAlgorithms()) {
-         final AlgorithmResult algorithmResult = results.get(algorithm);
-         if(algorithmResult != null) {
-            algorithmResults.add(new SearchAlgorithmResult(algorithmResult));
-         }
-      }
-   }
-
-   void add(final AlgorithmResult result) {
-      add(new SearchAlgorithmResult(result));
-   }
-
-   void add(final SearchAlgorithmResult result) {
+   public void add(final SearchAlgorithmResult result) {
       algorithmResults.add(result);
    }
 

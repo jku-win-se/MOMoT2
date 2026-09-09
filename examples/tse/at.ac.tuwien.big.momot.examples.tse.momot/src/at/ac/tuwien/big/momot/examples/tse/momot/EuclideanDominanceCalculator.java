@@ -2,7 +2,7 @@ package at.ac.tuwien.big.momot.examples.tse.momot;
 
 import java.util.Arrays;
 
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.comparator.ParetoDominanceComparator;
 

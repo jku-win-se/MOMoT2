@@ -1,26 +1,16 @@
-/*******************************************************************************
- * Copyright (c) 2015 Vienna University of Technology.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- * Martin Fleck (Vienna University of Technology) - initial API and implementation
- *
- * Initially developed in the context of ARTIST EU project www.artist-project.eu
- *******************************************************************************/
 package at.ac.tuwien.big.moea.experiment.executor.listener;
+
+import at.ac.tuwien.big.moea.experiment.executor.SearchExecutor;
+import at.ac.tuwien.big.moea.experiment.instrumenter.SearchInstrumenter;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.moeaframework.Executor;
-import org.moeaframework.Instrumenter;
 import org.moeaframework.analysis.collector.Accumulator;
 import org.moeaframework.util.progress.ProgressEvent;
+import org.moeaframework.util.progress.ProgressListener;
 
-public class AccumulatorProgressListener extends AbstractProgressListener {
+public class AccumulatorProgressListener extends AbstractProgressListener implements ProgressListener {
 
    private final List<Accumulator> accumulators = new ArrayList<>();
 
@@ -36,10 +26,13 @@ public class AccumulatorProgressListener extends AbstractProgressListener {
    @Override
    public void update(final ProgressEvent event) {
       if(isSeedFinished(event) || isFinished(event)) {
-         final Executor executor = event.getExecutor();
-         final Instrumenter instrumenter = executor.getInstrumenter();
-
-         accumulators.add(instrumenter.getLastAccumulator());
+         if(event.getExecutor() instanceof SearchExecutor) {
+            final SearchExecutor executor = (SearchExecutor) event.getExecutor();
+            if(executor.getInstrumenter() instanceof SearchInstrumenter) {
+               final SearchInstrumenter instrumenter = (SearchInstrumenter) executor.getInstrumenter();
+               accumulators.add(instrumenter.getLastAccumulator());
+            }
+         }
       }
    }
 }

@@ -13,7 +13,7 @@ import at.ac.tuwien.big.momot.^search.^fitness.dimension.TransformationLengthDim
 import at.ac.tuwien.big.momot.^search.solution.repair.TransformationPlaceholderRepairer
 import at.ac.tuwien.big.momot.util.MomotUtil
 import org.moeaframework.core.operator.OnePointCrossover
-import org.moeaframework.core.operator.TournamentSelection
+import org.moeaframework.core.selection.TournamentSelection
 
 var attribute = "calculation"
 var penalty = 1000

@@ -1,5 +1,5 @@
 import org.eclipse.emf.ecore.EcorePackage
-import org.moeaframework.core.operator.TournamentSelection
+import org.moeaframework.core.selection.TournamentSelection
 import org.moeaframework.core.operator.OnePointCrossover
 import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationPlaceholderMutation
 import org.eclipse.emf.ecore.ENamedElement

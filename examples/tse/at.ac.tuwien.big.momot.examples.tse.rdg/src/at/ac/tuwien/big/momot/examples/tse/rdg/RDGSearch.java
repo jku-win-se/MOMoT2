@@ -3,7 +3,7 @@ package at.ac.tuwien.big.momot.examples.tse.rdg;
 import java.io.IOException;
 import java.util.Arrays;
 
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedPopulation;
 
 import at.ac.tuwien.big.momot.examples.tse.rdg.util.CaseStudy;
 import at.ac.tuwien.big.momot.examples.tse.rdg.util.ModularizationUtil;

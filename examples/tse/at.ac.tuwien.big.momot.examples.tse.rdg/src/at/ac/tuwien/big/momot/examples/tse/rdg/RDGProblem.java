@@ -43,10 +43,10 @@ public class RDGProblem extends AbstractProblem {
 		}
 
 		RDGTransformationMetrics metrics = solutionRDG.calculateMetrics();
-		solution.setObjective(OBJECTIVE_MIN_MAX_RESP_DIFF, metrics.getMinMaxReponsibilityDifference());
-		solution.setObjective(OBJECTIVE_NR_MODULES, solutionRDG.getNrModules());
-		solution.setObjective(OBJECTIVE_COHESION, -metrics.getCohesionRatio()); // - because maximize
-		solution.setObjective(OBJECTIVE_COUPLING, metrics.getCouplingRatio());
+		solution.setObjectiveValue(OBJECTIVE_MIN_MAX_RESP_DIFF, metrics.getMinMaxReponsibilityDifference());
+		solution.setObjectiveValue(OBJECTIVE_NR_MODULES, solutionRDG.getNrModules());
+		solution.setObjectiveValue(OBJECTIVE_COHESION, -metrics.getCohesionRatio()); // - because maximize
+		solution.setObjectiveValue(OBJECTIVE_COUPLING, metrics.getCouplingRatio());
 		solution.setAttribute(ATTRIBUTE_RDG, solutionRDG);
 		solution.setAttribute(ATTRIBUTE_RDG_METRICS, metrics);
 	}

@@ -7,9 +7,9 @@ import at.ac.tuwien.big.moea.experiment.analyzer.kneepoint.PopulationAnalyzer.Fi
 import java.io.File;
 import java.io.IOException;
 
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Population;
-import org.moeaframework.core.PopulationIO;
+import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.core.population.Population;
+import at.ac.tuwien.big.moea.util.PopulationUtil;
 import org.moeaframework.core.Solution;
 
 public class FindKneePoint {
@@ -43,7 +43,7 @@ public class FindKneePoint {
    }
 
    public static void kneepoint(final String file) throws IOException {
-      final Population population = PopulationIO.readObjectives(new File(file));
+      final Population population = PopulationUtil.readObjectives(new File(file));
       final NondominatedPopulation nonDominatedPopulation = new NondominatedPopulation(population);
 
       System.out.println("Solution: " + population.size());

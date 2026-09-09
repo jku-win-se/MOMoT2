@@ -43,7 +43,7 @@ import org.eclipse.xtext.xbase.lib.IterableExtensions;
 import org.moeaframework.algorithm.EpsilonMOEA;
 import org.moeaframework.algorithm.NSGAII;
 import org.moeaframework.algorithm.RandomSearch;
-import org.moeaframework.core.Population;
+import org.moeaframework.core.population.Population;
 import org.moeaframework.util.progress.ProgressListener;
 
 @SuppressWarnings("all")
