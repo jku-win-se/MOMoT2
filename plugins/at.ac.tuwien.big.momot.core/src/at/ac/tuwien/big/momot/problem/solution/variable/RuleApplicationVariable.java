@@ -15,6 +15,7 @@ import org.eclipse.emf.henshin.model.Rule;
 public class RuleApplicationVariable extends RuleApplicationImpl implements IRuleApplicationVariable {
 
    private static final long serialVersionUID = 5601540634156998449L;
+   private String variableName;
 
    public RuleApplicationVariable(final Engine engine, final EGraph graph, final Rule rule,
          final Assignment partialMatch) {
@@ -28,13 +29,35 @@ public class RuleApplicationVariable extends RuleApplicationImpl implements IRul
 
    @Override
    public int compareTo(final ITransformationVariable other) {
-      return new Integer(this.hashCode()).compareTo(other.hashCode());
+      return Integer.compare(this.hashCode(), other.hashCode());
    }
 
    @Override
    public ITransformationVariable copy() {
       return new RuleApplicationVariable(this);
    }
+
+   @Override
+   public String getName() {
+      return variableName != null ? variableName : (getUnit() != null ? getUnit().getName() : "RuleApplication");
+   }
+
+   public void setName(final String name) {
+      this.variableName = name;
+   }
+
+   @Override
+   public String getDefinition() {
+      return getUnit() != null ? getUnit().getName() : "RuleApplication";
+   }
+
+   @Override
+   public String encode() {
+      return toString();
+   }
+
+   @Override
+   public void decode(final String value) {}
 
    @Override
    public boolean execute() {

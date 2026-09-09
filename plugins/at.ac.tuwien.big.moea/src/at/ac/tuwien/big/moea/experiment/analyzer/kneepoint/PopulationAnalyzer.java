@@ -7,7 +7,7 @@ import java.util.Collections;
 
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.math3.util.Pair;
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 
 /**
@@ -56,7 +56,7 @@ public class PopulationAnalyzer {
    }
 
    public double calculateEuclideanDistance(final double[] left, final double[] right) {
-      double diff; // Auxiliar var
+      double diff;
       double distance = 0.0;
       for(int i = 0; i < left.length; i++) {
          diff = left[i] - right[i];
@@ -82,7 +82,7 @@ public class PopulationAnalyzer {
    }
 
    public double[] calculateNormalizedObjectives(final Solution solution) {
-      return MathUtil.normalize(solution.getObjectives(), getBestObjectives(), getWorstObjectives());
+      return MathUtil.normalize(solution.getObjectiveValues(), getBestObjectives(), getWorstObjectives());
    }
 
    public double[] getBestObjectives() {
@@ -93,8 +93,8 @@ public class PopulationAnalyzer {
 
       for(final Solution solution : referenceSet) {
          for(int i = 0; i < getNumberOfObjectives(); i++) {
-            if(solution.getObjective(i) < best[i]) {
-               best[i] = solution.getObjective(i);
+            if(solution.getObjectiveValue(i) < best[i]) {
+               best[i] = solution.getObjectiveValue(i);
             }
          }
       }
@@ -160,8 +160,6 @@ public class PopulationAnalyzer {
       final NondominatedPopulation knees = new NondominatedPopulation();
       int size = neighborhoodSize;
       if(size > population.size() - 1) {
-         // System.err.println("Warning: There are not enough solutions in the population to fulfill a neighborhood size
-         // of " + neighborhoodSize + ".");
          System.out.println(
                "The neighborhood size will be set to the maximum neighborhood (n-1): " + (population.size() - 1));
          size = population.size() - 1;
@@ -201,7 +199,7 @@ public class PopulationAnalyzer {
          final Integer[] indices = indicesInUnsortedArray(distances);
 
          boolean isKnee = true;
-         for(int i = 1; i < size + 1; i++) { // first solution is the same (distance 0)
+         for(int i = 1; i < size + 1; i++) {
             final Solution otherSolution = normalizedPopulation.get(indices[i]);
             if(hasWorseFitness(solution, otherSolution)) {
                isKnee = false;
@@ -234,8 +232,8 @@ public class PopulationAnalyzer {
    public Solution getNormalizedSolution(final Solution solution) {
       final Solution normalizedSolution = solution.copy();
       normalizedSolution.getAttributes().putAll(solution.getAttributes());
-      normalizedSolution.setAttribute("momot_original_objectives", solution.getObjectives());
-      normalizedSolution.setObjectives(calculateNormalizedObjectives(solution));
+      normalizedSolution.setAttribute("momot_original_objectives", solution.getObjectiveValues());
+      normalizedSolution.setObjectiveValues(calculateNormalizedObjectives(solution));
       return normalizedSolution;
    }
 
@@ -255,8 +253,8 @@ public class PopulationAnalyzer {
 
       for(final Solution solution : referenceSet) {
          for(int i = 0; i < getNumberOfObjectives(); i++) {
-            if(solution.getObjective(i) > worst[i]) {
-               worst[i] = solution.getObjective(i);
+            if(solution.getObjectiveValue(i) > worst[i]) {
+               worst[i] = solution.getObjectiveValue(i);
             }
          }
       }

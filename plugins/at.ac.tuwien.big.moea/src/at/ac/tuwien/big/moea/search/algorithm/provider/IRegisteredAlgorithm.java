@@ -12,7 +12,7 @@
  *******************************************************************************/
 package at.ac.tuwien.big.moea.search.algorithm.provider;
 
-import org.moeaframework.core.Algorithm;
+import org.moeaframework.algorithm.Algorithm;
 
 public interface IRegisteredAlgorithm<A extends Algorithm> {
    A createAlgorithm();

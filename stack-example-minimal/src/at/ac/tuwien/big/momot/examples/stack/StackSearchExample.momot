@@ -3,7 +3,7 @@ package at.ac.tuwien.big.momot.examples.stack.momot
 import at.ac.tuwien.big.momot.problem.unit.parameter.random.RandomIntegerValue
 import at.ac.tuwien.big.momot.^search.^fitness.dimension.TransformationLengthDimension
 import at.ac.tuwien.big.momot.^search.solution.repair.TransformationPlaceholderRepairer
-import org.moeaframework.core.operator.TournamentSelection
+import org.moeaframework.core.selection.TournamentSelection
 import org.moeaframework.core.operator.OnePointCrossover
 import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationPlaceholderMutation
 import at.ac.tuwien.big.momot.^search.algorithm.operator.mutation.TransformationParameterMutation

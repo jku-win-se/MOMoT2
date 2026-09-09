@@ -18,6 +18,7 @@ public class UnitApplicationVariable extends UnitApplicationImpl implements IUni
 
    protected boolean isExecuted;
    protected boolean isUndone;
+   private String variableName;
 
    public UnitApplicationVariable(final Engine engine, final EGraph graph, final Unit unit,
          final Assignment assignment) {
@@ -31,13 +32,35 @@ public class UnitApplicationVariable extends UnitApplicationImpl implements IUni
 
    @Override
    public int compareTo(final ITransformationVariable other) {
-      return new Integer(this.hashCode()).compareTo(other.hashCode());
+      return Integer.compare(this.hashCode(), other.hashCode());
    }
 
    @Override
    public ITransformationVariable copy() {
       return new UnitApplicationVariable(this);
    }
+
+   @Override
+   public String getName() {
+      return variableName != null ? variableName : (getUnit() != null ? getUnit().getName() : "UnitApplication");
+   }
+
+   public void setName(final String name) {
+      this.variableName = name;
+   }
+
+   @Override
+   public String getDefinition() {
+      return getUnit() != null ? getUnit().getName() : "UnitApplication";
+   }
+
+   @Override
+   public String encode() {
+      return toString();
+   }
+
+   @Override
+   public void decode(final String value) {}
 
    @Override
    public boolean execute() {

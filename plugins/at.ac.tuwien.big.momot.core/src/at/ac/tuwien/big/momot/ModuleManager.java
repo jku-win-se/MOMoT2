@@ -28,7 +28,6 @@ import org.eclipse.emf.henshin.interpreter.RuleApplication;
 import org.eclipse.emf.henshin.interpreter.UnitApplication;
 import org.eclipse.emf.henshin.model.Module;
 import org.eclipse.emf.henshin.model.Parameter;
-import org.eclipse.emf.henshin.model.ParameterKind;
 import org.eclipse.emf.henshin.model.Rule;
 import org.eclipse.emf.henshin.model.Unit;
 import org.eclipse.emf.henshin.model.resource.HenshinResourceSet;
@@ -176,9 +175,6 @@ public class ModuleManager {
       }
 
       for(final Parameter parameter : assignment.getUnit().getParameters()) {
-         if(isInternalVarParameter(parameter)) {
-            continue;
-         }
          final Object value = nextParameterValue(parameter);
          if(value != null) {
             assignment.setParameterValue(parameter, value);
@@ -208,7 +204,7 @@ public class ModuleManager {
       }
 
       for(final Parameter parameter : assignment.getUnit().getParameters()) {
-         if(nonSolutionParameters.contains(parameter) && !isInternalVarParameter(parameter)) {
+         if(nonSolutionParameters.contains(parameter)) {
             assignment.setParameterValue(parameter, null);
          }
       }
@@ -407,10 +403,6 @@ public class ModuleManager {
             nameToParameters.put(getQualifiedName(parameter), parameter);
          }
       }
-   }
-
-   protected boolean isInternalVarParameter(final Parameter parameter) {
-      return parameter != null && parameter.getKind() == ParameterKind.VAR;
    }
 
    public EGraph loadGraph(final String resource) {

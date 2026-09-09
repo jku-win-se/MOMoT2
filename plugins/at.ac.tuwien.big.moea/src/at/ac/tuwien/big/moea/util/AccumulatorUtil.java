@@ -1,131 +1,38 @@
-/*******************************************************************************
- * Copyright (c) 2015 Vienna University of Technology.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- * Martin Fleck (Vienna University of Technology) - initial API and implementation
- *
- * Initially developed in the context of ARTIST EU project www.artist-project.eu
- *******************************************************************************/
 package at.ac.tuwien.big.moea.util;
 
+import at.ac.tuwien.big.moea.experiment.executor.SearchExecutor;
+import at.ac.tuwien.big.moea.experiment.instrumenter.SearchInstrumenter;
 import at.ac.tuwien.big.moea.experiment.instrumenter.collector.LocalBestFitnessCollector;
 import at.ac.tuwien.big.moea.experiment.instrumenter.collector.SimpleBestSolutionCollector;
 
 import java.io.Serializable;
 import java.util.List;
 
-import org.moeaframework.Executor;
-import org.moeaframework.Instrumenter;
+import org.moeaframework.algorithm.Algorithm;
 import org.moeaframework.analysis.collector.Accumulator;
-import org.moeaframework.analysis.collector.AdaptiveTimeContinuationCollector;
-import org.moeaframework.analysis.collector.ApproximationSetCollector;
-import org.moeaframework.analysis.collector.ElapsedTimeCollector;
-import org.moeaframework.analysis.collector.EpsilonProgressCollector;
-import org.moeaframework.analysis.collector.IndicatorCollector;
-import org.moeaframework.analysis.collector.InstrumentedAlgorithm;
-import org.moeaframework.analysis.collector.PopulationSizeCollector;
-import org.moeaframework.core.Algorithm;
+import org.moeaframework.analysis.runtime.Instrumenter;
 import org.moeaframework.core.Solution;
 
 public final class AccumulatorUtil {
 
    public final class Keys {
 
-      /**
-       * from {@link InstrumentedAlgorithm#doAction()}
-       *
-       * @see InstrumentedAlgorithm#doAction()
-       */
       public static final String NUMBER_OF_EVALUATIONS = "NFE";
-
-      /**
-       * from {@link PopulationSizeCollector#collect(Accumulator)}
-       */
       public static final String POPULATION_SIZE = "Population Size";
-
-      /**
-       * from {@link PopulationSizeCollector#collect(Accumulator)}
-       */
       public static final String ARCHIVE_SIZE = "Archive Size";
-
-      /**
-       * from {@link ApproximationSetCollector#collect(Accumulator)}
-       */
       public static final String APPROXIMATION_SET = "Approximation Set";
-
-      /**
-       * from {@link ElapsedTimeCollector#collect(Accumulator)}
-       */
       public static final String ELAPSED_TIME = "Elapsed Time";
-
-      /**
-       * from {@link AdaptiveTimeContinuationCollector#collect(Accumulator)}
-       */
       public static final String NUMBER_OF_RESTARTS = "Number of Restarts";
-
-      /**
-       * from {@link EpsilonProgressCollector#collect(Accumulator)}
-       */
       public static final String NUMBER_OF_IMPROVEMENTS = "Number of Improvements";
-
-      /**
-       * from {@link EpsilonProgressCollector#collect(Accumulator)}
-       */
       public static final String NUMBER_OF_DOMINATING_IMPROVEMENTS = "Number of Dominating Improvements";
-
-      /**
-       * from {@link IndicatorCollector#collect(Accumulator)}
-       * as defined by {@link Instrumenter#instrument(org.moeaframework.core.Algorithm)}
-       */
       public static final String INDICATOR_CONTRIBUTION = "Contribution";
-
-      /**
-       * from {@link IndicatorCollector#collect(Accumulator)}
-       * as defined by {@link Instrumenter#instrument(org.moeaframework.core.Algorithm)}
-       */
       public static final String INDICATOR_ADDITIVE_EPSILON = "AdditiveEpsilonIndicator";
-
-      /**
-       * from {@link IndicatorCollector#collect(Accumulator)}
-       * as defined by {@link Instrumenter#instrument(org.moeaframework.core.Algorithm)}
-       */
       public static final String INDICATOR_SPACING = "Spacing";
-
-      /**
-       * from {@link IndicatorCollector#collect(Accumulator)}
-       * as defined by {@link Instrumenter#instrument(org.moeaframework.core.Algorithm)}
-       */
       public static final String INDICATOR_INVERTED_GENERATIONAL_DISTANCE = "InvertedGenerationalDistance";
-
-      /**
-       * from {@link IndicatorCollector#collect(Accumulator)}
-       * as defined by {@link Instrumenter#instrument(org.moeaframework.core.Algorithm)}
-       */
       public static final String INDICATOR_GENERATIONAL_DISTANCE = "GenerationalDistance";
-
-      /**
-       * from {@link IndicatorCollector#collect(Accumulator)}
-       * as defined by {@link Instrumenter#instrument(org.moeaframework.core.Algorithm)}
-       */
       public static final String INDICATOR_HYPERVOLUME = "Hypervolume";
-
-      /**
-       * from {@link SimpleBestSolutionCollector#collect(Accumulator)}
-       */
       public static final String SIMPLE_BEST_SOLUTION = "SimpleBestSolution";
-
-      /**
-       * from {@link LocalBestFitnessCollector#collect(Accumulator)}
-       */
       public static final String LOCAL_BEST_FITNESS = "LocalBestFitness";
-
-      /**
-       * from {@link AlgorithmCollector#collect(Accumulator)}
-       */
       public static final String ALGORITHM = "Algorithm";
 
       private Keys() {}
@@ -138,10 +45,6 @@ public final class AccumulatorUtil {
       try {
          return accumulator.get(key, index);
       } catch(IllegalArgumentException | IndexOutOfBoundsException e) {
-         /**
-          * IllegalArgumentException - if the key was not contained in this accumulator
-          * IndexOutOfBoundsException - if the index is out of range (index < 0 || index >= size(key))
-          */
          return null;
       }
    }
@@ -201,14 +104,14 @@ public final class AccumulatorUtil {
       return CastUtil.asClass(getLatestAccumulatorData(accumulator, key), clazz);
    }
 
-   public static Serializable getLatestAccumulatorData(final Executor executor, final String key) {
+   public static Serializable getLatestAccumulatorData(final SearchExecutor executor, final String key) {
       if(executor == null) {
          return null;
       }
       return getLatestAccumulatorData(executor.getInstrumenter(), key);
    }
 
-   public static <T extends Object> T getLatestAccumulatorData(final Executor executor, final String key,
+   public static <T extends Object> T getLatestAccumulatorData(final SearchExecutor executor, final String key,
          final Class<T> clazz) {
       return CastUtil.asClass(getLatestAccumulatorData(executor, key), clazz);
    }
@@ -217,7 +120,10 @@ public final class AccumulatorUtil {
       if(instrumenter == null) {
          return null;
       }
-      return getLatestAccumulatorData(instrumenter.getLastAccumulator(), key);
+      if(instrumenter instanceof SearchInstrumenter) {
+         return getLatestAccumulatorData(((SearchInstrumenter) instrumenter).getLastAccumulator(), key);
+      }
+      return null;
    }
 
    public static <T extends Object> T getLatestAccumulatorData(final Instrumenter instrumenter, final String key,
@@ -233,7 +139,7 @@ public final class AccumulatorUtil {
       return getLatestAccumulatorData(accumulator, Keys.ALGORITHM, Algorithm.class);
    }
 
-   public static Algorithm getLatestAlgorithm(final Executor executor) {
+   public static Algorithm getLatestAlgorithm(final SearchExecutor executor) {
       return getLatestAccumulatorData(executor, Keys.ALGORITHM, Algorithm.class);
    }
 
@@ -250,7 +156,7 @@ public final class AccumulatorUtil {
       return getLatestAccumulatorData(accumulator, Keys.SIMPLE_BEST_SOLUTION, Solution.class);
    }
 
-   public static Solution getLatestBestSolution(final Executor executor) {
+   public static Solution getLatestBestSolution(final SearchExecutor executor) {
       return getLatestAccumulatorData(executor, Keys.SIMPLE_BEST_SOLUTION, Solution.class);
    }
 
@@ -333,7 +239,7 @@ public final class AccumulatorUtil {
       }
    }
 
-   public static boolean hasAccumulatorData(final Executor executor, final String key) {
+   public static boolean hasAccumulatorData(final SearchExecutor executor, final String key) {
       if(executor == null) {
          return false;
       }
@@ -344,7 +250,10 @@ public final class AccumulatorUtil {
       if(instrumenter == null) {
          return false;
       }
-      return hasAccumulatorData(instrumenter.getLastAccumulator(), key);
+      if(instrumenter instanceof SearchInstrumenter) {
+         return hasAccumulatorData(((SearchInstrumenter) instrumenter).getLastAccumulator(), key);
+      }
+      return false;
    }
 
    private AccumulatorUtil() {}

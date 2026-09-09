@@ -10,10 +10,12 @@ Read it fully before taking any action. It supersedes older inline comments.
 **MOMoT** (Model-Driven Optimization via Transformation) combines:
 - **EMF/Ecore** — the metamodel layer (`.ecore`, `.xmi`)
 - **Henshin** — graph-transformation rules (`.henshin`) used as search operators
-- **MOEA Framework** — multi-objective evolutionary algorithms (NSGA-II, NSGA-III, Random)
+- **MOEA Framework 5.1** — multi-objective evolutionary algorithms (NSGA-II, NSGA-III, Random). Scripts must import `org.moeaframework.core.selection.TournamentSelection` (not `core.operator`).
 - **MOMoT DSL** — a declarative search script (`.momot`) that wires metamodel + rules + algorithms + fitness
 
 The system ships as a **Docker headless REST runner** plus an **MCP server** that bridges LLM tool calls to the runner. An agent's typical task is to produce valid `.ecore` + `.henshin` + `.momot` artifacts for a new optimization problem, execute the search, and interpret the Pareto front.
+
+This branch uses **MOEA Framework 5.1** (upgraded from 2.12). Typed objectives, `SearchExecutor`/`SearchAnalyzer`, and algorithm constructors (`populationSize` on NSGA-II/III and Random Search) follow the 5.x APIs. Do not emit 2.12 imports such as `org.moeaframework.core.operator.TournamentSelection` or `org.moeaframework.Executor`.
 
 ---
 

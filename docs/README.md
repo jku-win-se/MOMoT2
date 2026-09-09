@@ -2,7 +2,7 @@
 
 Welcome to the official documentation for the **MOMoT-MCP** platform! 
 
-This repository combines Model-Driven Engineering (EMF/Ecore, Henshin Graph Transformations) with Multi-Objective Evolutionary Algorithms (MOEA Framework) to solve complex optimization problems. It has been modernized into a **container-first, headless deployment** equipped with a **Model Context Protocol (MCP)** server, making it fully accessible to LLM coding agents (like Cursor, Claude, and more) as well as automated CI/CD pipelines.
+This repository combines Model-Driven Engineering (EMF/Ecore, Henshin Graph Transformations) with Multi-Objective Evolutionary Algorithms ([MOEA Framework 5.1](https://github.com/MOEAFramework/MOEAFramework/releases/tag/v5.1)) to solve complex optimization problems. It has been modernized into a **container-first, headless deployment** equipped with a **Model Context Protocol (MCP)** server, making it fully accessible to LLM coding agents (like Cursor, Claude, and more) as well as automated CI/CD pipelines.
 
 ---
 

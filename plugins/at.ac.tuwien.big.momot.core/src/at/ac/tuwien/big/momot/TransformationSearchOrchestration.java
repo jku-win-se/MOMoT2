@@ -34,9 +34,9 @@ import org.eclipse.emf.henshin.interpreter.impl.ChangeImpl;
 import org.eclipse.ocl.ecore.EcoreEnvironmentFactory;
 import org.eclipse.ocl.ecore.OCL;
 import org.eclipse.ocl.ecore.OCL.Helper;
-import org.moeaframework.core.EpsilonBoxDominanceArchive;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.NondominatedSortingPopulation;
+import org.moeaframework.core.population.EpsilonBoxDominanceArchive;
+import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedSortingPopulation;
 import org.moeaframework.core.comparator.ParetoDominanceComparator;
 
 public class TransformationSearchOrchestration extends AbstractSearchOrchestration<TransformationSolution> {

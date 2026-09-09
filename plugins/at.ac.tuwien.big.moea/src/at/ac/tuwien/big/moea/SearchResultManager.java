@@ -21,10 +21,10 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.io.output.ByteArrayOutputStream;
-import org.moeaframework.core.EpsilonBoxDominanceArchive;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Population;
-import org.moeaframework.core.PopulationIO;
+import at.ac.tuwien.big.moea.util.PopulationUtil;
+import org.moeaframework.core.population.EpsilonBoxDominanceArchive;
+import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.core.population.Population;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.comparator.ParetoDominanceComparator;
 
@@ -79,7 +79,7 @@ public class SearchResultManager {
       String objectives = "";
       if(solution != null) {
          for(int i = 0; i < solution.getNumberOfObjectives(); i++) {
-            objectives += "_" + Double.toString(solution.getObjective(i));
+            objectives += "_" + Double.toString(solution.getObjectiveValue(i));
          }
       }
       String fileName = baseName;
@@ -151,7 +151,7 @@ public class SearchResultManager {
       }
 
       try {
-         referenceSet.addAll(PopulationIO.readObjectives(referenceSetFile));
+         referenceSet.addAll(PopulationUtil.readObjectives(referenceSetFile));
       } catch(final IOException e) {
          System.err.println("Could not load reference set objectives: " + e.getMessage());
       }
@@ -374,11 +374,11 @@ public class SearchResultManager {
 
    public static void writeObjectives(final PrintStream ps, final Iterable<Solution> solutions) {
       for(final Solution solution : solutions) {
-         ps.print(Double.toString(solution.getObjective(0)));
+         ps.print(Double.toString(solution.getObjectiveValue(0)));
 
          for(int i = 1; i < solution.getNumberOfObjectives(); i++) {
             ps.print(" ");
-            ps.print(solution.getObjective(i));
+            ps.print(solution.getObjectiveValue(i));
          }
          ps.println();
       }

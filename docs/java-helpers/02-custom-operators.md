@@ -56,6 +56,9 @@ public class FeasibilityPreservingMutation implements Mutation {
 Custom mutation operators are wired directly into algorithm configurations (e.g., NSGA_II) in your `.momot` script:
 
 ```momot
+import org.moeaframework.core.selection.TournamentSelection
+import org.moeaframework.core.operator.OnePointCrossover
+
 algorithms = {
    NSGA_II : moea.createNSGAII(
        new TournamentSelection(2), 

@@ -11,7 +11,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 import org.apache.commons.math3.stat.descriptive.UnivariateStatistic;
-import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedPopulation;
 
 public class SearchAnalysis extends IndicatorConfiguration {
    public static final double SIGNIFICANCE_ONE_PERCENT = 0.01;

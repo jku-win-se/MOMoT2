@@ -1,15 +1,3 @@
-/*******************************************************************************
- * Copyright (c) 2015 Vienna University of Technology.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- * Martin Fleck (Vienna University of Technology) - initial API and implementation
- *
- * Initially developed in the context of ARTIST EU project www.artist-project.eu
- *******************************************************************************/
 package at.ac.tuwien.big.moea.search.algorithm.local;
 
 import java.util.Arrays;
@@ -18,8 +6,8 @@ import java.util.List;
 import java.util.Set;
 
 import org.moeaframework.algorithm.AbstractAlgorithm;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.Problem;
+import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.problem.Problem;
 import org.moeaframework.core.Solution;
 
 public abstract class AbstractLocalSearchAlgorithm<S extends Solution> extends AbstractAlgorithm
@@ -42,6 +30,11 @@ public abstract class AbstractLocalSearchAlgorithm<S extends Solution> extends A
       this.initialSolution = initialSolution;
       this.neighborhoodFunction = neighborhoodFunction;
       this.fitnessComparator = fitnessComparator;
+   }
+
+   @Override
+   public String getName() {
+      return getClass().getSimpleName();
    }
 
    protected int compare(final S solution, final S otherSolution) {
@@ -138,7 +131,7 @@ public abstract class AbstractLocalSearchAlgorithm<S extends Solution> extends A
 
    @SuppressWarnings("unchecked")
    @Override
-   protected void initialize() {
+   public void initialize() {
       super.initialize();
       problem.evaluate(getInitialSolution());
       setCurrentSolution((S) getInitialSolution().copy());

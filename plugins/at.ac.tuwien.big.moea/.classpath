@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <classpath>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-11"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="org.eclipse.pde.core.requiredPlugins"/>
 	<classpathentry kind="src" path="src">
 		<attributes>
@@ -21,7 +21,7 @@
 	<classpathentry exported="true" kind="lib" path="lib/jcommon-1.0.23.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/jfreechart-1.0.19.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/JMetal-4.3.jar"/>
-	<classpathentry exported="true" kind="lib" path="lib/MOEAFramework-2.12.jar"/>
+	<classpathentry exported="true" kind="lib" path="lib/MOEAFramework-5.1.jar"/>
 	<classpathentry exported="true" kind="lib" path="lib/rsyntaxtextarea.jar"/>
 	<classpathentry kind="output" path="target/classes"/>
 </classpath>

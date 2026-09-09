@@ -3,9 +3,9 @@ package at.ac.tuwien.big.moea.search.algorithm;
 import at.ac.tuwien.big.moea.ISearchOrchestration;
 import at.ac.tuwien.big.moea.problem.ISearchProblem;
 
-import org.moeaframework.core.EpsilonBoxDominanceArchive;
-import org.moeaframework.core.NondominatedPopulation;
-import org.moeaframework.core.NondominatedSortingPopulation;
+import org.moeaframework.core.population.EpsilonBoxDominanceArchive;
+import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.core.population.NondominatedSortingPopulation;
 import org.moeaframework.core.Solution;
 
 public abstract class AbstractAlgorithmFactory<S extends Solution> {

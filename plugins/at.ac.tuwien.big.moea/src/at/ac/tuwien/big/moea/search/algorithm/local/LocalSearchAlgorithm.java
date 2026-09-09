@@ -12,7 +12,7 @@
  *******************************************************************************/
 package at.ac.tuwien.big.moea.search.algorithm.local;
 
-import org.moeaframework.core.Algorithm;
+import org.moeaframework.algorithm.Algorithm;
 import org.moeaframework.core.Solution;
 
 public interface LocalSearchAlgorithm<S extends Solution> extends Algorithm {

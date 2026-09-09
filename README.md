@@ -3,7 +3,7 @@
 [![Project Page](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://jku-win-se.github.io/MOMoT-MCP/)
 [![License](https://img.shields.io/badge/license-MIT%2FEPL-green.svg)](#)
 
-MOMoT-MCP combines model transformation (EMF/Henshin) with search-based optimization to solve complex model-driven engineering tasks. This repository hosts the container-first, headless distribution of MOMoT, featuring a robust **Model Context Protocol (MCP)** server and automated agent pipelines designed specifically for LLM-driven optimization and synthesis.
+MOMoT-MCP combines model transformation (EMF/Henshin) with search-based optimization ([MOEA Framework 5.1](https://github.com/MOEAFramework/MOEAFramework/releases/tag/v5.1)) to solve complex model-driven engineering tasks. This repository hosts the container-first, headless distribution of MOMoT, featuring a robust **Model Context Protocol (MCP)** server and automated agent pipelines designed specifically for LLM-driven optimization and synthesis.
 
 **Project Documentation & Guides:** https://jku-win-se.github.io/MOMoT-MCP/
 
@@ -88,7 +88,7 @@ Refer to [mcp/README.md](mcp/README.md) for full JSON schemas and payload exampl
 | `tools/` | CLI validators for `.henshin`, `.momot`, `.ecore`, and `.xmi` files |
 | `test-suite/` | E2E benchmarks (T01-T05) with reference Pareto fronts |
 | `stack-example-minimal/` | Canonical stack load-balancing example payload |
-| `plugins/` | Core MOMoT compiler, MOEA bridge, and headless runner modules |
+| `plugins/` | Core MOMoT compiler, MOEA 5.1 bridge, and headless runner modules |
 | `headless/` | Headless runtime wrapper modules |
 | `Dockerfile.headless` | Primary production REST headless Docker image |
 

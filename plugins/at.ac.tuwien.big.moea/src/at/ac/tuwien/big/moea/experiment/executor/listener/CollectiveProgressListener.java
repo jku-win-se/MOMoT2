@@ -1,17 +1,6 @@
-/*******************************************************************************
- * Copyright (c) 2015 Vienna University of Technology.
- * All rights reserved. This program and the accompanying materials
- * are made available under the terms of the Eclipse Public License v1.0
- * which accompanies this distribution, and is available at
- * http://www.eclipse.org/legal/epl-v10.html
- *
- * Contributors:
- * Martin Fleck (Vienna University of Technology) - initial API and implementation
- *
- * Initially developed in the context of ARTIST EU project www.artist-project.eu
- *******************************************************************************/
 package at.ac.tuwien.big.moea.experiment.executor.listener;
 
+import at.ac.tuwien.big.moea.experiment.executor.SearchExecutor;
 import at.ac.tuwien.big.moea.experiment.instrumenter.collector.SimpleBestSolutionCollector;
 import at.ac.tuwien.big.moea.print.ISolutionWriter;
 import at.ac.tuwien.big.moea.util.AccumulatorUtil;
@@ -21,7 +10,6 @@ import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.moeaframework.Executor;
 import org.moeaframework.core.Solution;
 import org.moeaframework.util.progress.ProgressEvent;
 import org.moeaframework.util.progress.ProgressListener;
@@ -70,21 +58,21 @@ public class CollectiveProgressListener extends AbstractProgressListener impleme
    }
 
    public class AccumulatorColumn implements IColumn {
-      private final Executor executor;
+      private final SearchExecutor executor;
       private final String key;
       private final String header;
 
-      public AccumulatorColumn(final Executor executor, final String key) {
+      public AccumulatorColumn(final SearchExecutor executor, final String key) {
          this(executor, key, key);
       }
 
-      public AccumulatorColumn(final Executor executor, final String key, final String header) {
+      public AccumulatorColumn(final SearchExecutor executor, final String key, final String header) {
          this.executor = executor;
          this.key = key;
          this.header = header;
       }
 
-      public Executor getExecutor() {
+      public SearchExecutor getExecutor() {
          return executor;
       }
 
@@ -109,7 +97,8 @@ public class CollectiveProgressListener extends AbstractProgressListener impleme
       }
 
       protected String getLatestDataString() {
-         return AccumulatorUtil.getLatestAccumulatorData(getExecutor(), getKey()).toString();
+         final Object data = AccumulatorUtil.getLatestAccumulatorData(getExecutor(), getKey());
+         return data != null ? data.toString() : "";
       }
 
       @Override
@@ -223,7 +212,7 @@ public class CollectiveProgressListener extends AbstractProgressListener impleme
    }
 
    private IColumn createAccumulatorColumn(final ProgressEvent event, final String key, final String header) {
-      return new AccumulatorColumn(event.getExecutor(), key, header);
+      return new AccumulatorColumn((SearchExecutor) event.getExecutor(), key, header);
    }
 
    private IColumn createEvaluationColumn(final ProgressEvent event) {
@@ -239,7 +228,8 @@ public class CollectiveProgressListener extends AbstractProgressListener impleme
       return new AbstractEventColumn(event, "%-Complete") {
          @Override
          public String getLatestData() {
-            return TextUtil.toString(getEvent().getPercentComplete() * FACTO, DECIMAL_PLACES) + "%";
+            final double percent = getEvent().getMaxNFE() > 0 ? ((double) getEvent().getCurrentNFE() / getEvent().getMaxNFE()) * FACTO : 0.0;
+            return TextUtil.toString(percent, DECIMAL_PLACES) + "%";
          }
 
          @Override
@@ -270,13 +260,14 @@ public class CollectiveProgressListener extends AbstractProgressListener impleme
          return columns;
       }
 
-      final Solution bestSolution = AccumulatorUtil.getLatestBestSolution(event.getExecutor());
+      final SearchExecutor executor = event.getExecutor() instanceof SearchExecutor ? (SearchExecutor) event.getExecutor() : null;
+      final Solution bestSolution = AccumulatorUtil.getLatestBestSolution(executor);
       if(bestSolution == null) {
          return columns;
       }
 
       if(printSimpleAggregate) {
-         columns.add(new AccumulatorColumn(event.getExecutor(), AccumulatorUtil.Keys.SIMPLE_BEST_SOLUTION,
+         columns.add(new AccumulatorColumn(executor, AccumulatorUtil.Keys.SIMPLE_BEST_SOLUTION,
                "Aggregated Fitness") {
             @Override
             protected String getLatestDataString() {
@@ -408,10 +399,6 @@ public class CollectiveProgressListener extends AbstractProgressListener impleme
 
    @Override
    public void update(final ProgressEvent event) {
-      if(!isRunning(event) || isFinished(event)) {
-         return;
-      }
-
       final List<IColumn> columns = getColumns(event);
       printHeader(columns);
       printData(columns);

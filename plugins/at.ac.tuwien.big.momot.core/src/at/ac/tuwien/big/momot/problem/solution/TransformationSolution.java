@@ -30,7 +30,7 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.henshin.interpreter.EGraph;
 import org.eclipse.emf.henshin.model.Parameter;
 import org.moeaframework.core.Solution;
-import org.moeaframework.core.Variable;
+import org.moeaframework.core.variable.Variable;
 
 public class TransformationSolution extends SearchSolution implements Comparable<TransformationSolution> {
 
