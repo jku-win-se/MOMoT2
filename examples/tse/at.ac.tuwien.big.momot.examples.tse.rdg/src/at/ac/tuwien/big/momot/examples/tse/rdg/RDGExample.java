@@ -10,16 +10,15 @@ import org.apache.commons.lang3.time.StopWatch;
 import org.eclipse.emf.henshin.model.resource.HenshinResourceSet;
 import org.moeaframework.algorithm.NSGAII;
 import org.moeaframework.algorithm.RandomSearch;
-import org.moeaframework.core.population.ReferencePointNondominatedSortingPopulation;
-import at.ac.tuwien.big.moea.util.PopulationUtil;
-import org.moeaframework.algorithm.Algorithm;
-import org.moeaframework.core.population.NondominatedPopulation;
-import org.moeaframework.core.population.NondominatedSortingPopulation;
+import org.moeaframework.algorithm.ReferencePointNondominatedSortingPopulation;
+import org.moeaframework.core.Algorithm;
+import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.NondominatedSortingPopulation;
+import org.moeaframework.core.PopulationIO;
 import org.moeaframework.core.Solution;
 import org.moeaframework.core.operator.CompoundVariation;
 import org.moeaframework.core.operator.OnePointCrossover;
-import org.moeaframework.core.selection.TournamentSelection;
-import org.moeaframework.util.weights.NormalBoundaryDivisions;
+import org.moeaframework.core.operator.TournamentSelection;
 
 import at.ac.tuwien.big.moea.search.algorithm.operator.mutation.RandomizableMutation;
 import at.ac.tuwien.big.moea.search.solution.generator.ExtendedRandomInitialization;
@@ -57,8 +56,7 @@ public class RDGExample {
 	public static NondominatedPopulation runNSGAIII(RDGProblem problem, int populationSize, int maxIterations, int divisionsInner, int divisionsOuter) {
 		return runAlgorithm(new NSGAII(
 				problem, 
-				populationSize,
-				new ReferencePointNondominatedSortingPopulation(problem.getNumberOfObjectives(), new NormalBoundaryDivisions(divisionsOuter, divisionsInner)), 
+				new ReferencePointNondominatedSortingPopulation(problem.getNumberOfObjectives(), divisionsOuter, divisionsInner), 
 				null,
 				new TournamentSelection(2),	
 				new CompoundVariation(new OnePointCrossover(1.0), new RandomizableMutation(0.2)), 
@@ -72,7 +70,6 @@ public class RDGExample {
 	public static NondominatedPopulation runRandom(RDGProblem problem, int populationSize, int maxIterations) {
 		return runAlgorithm(new RandomSearch(
 				problem, 
-				populationSize,
 				new ExtendedRandomInitialization(problem, populationSize),
 				new NondominatedPopulation()), 
 				problem, populationSize, maxIterations);
@@ -81,7 +78,6 @@ public class RDGExample {
 	public static NondominatedPopulation runNSGAII(RDGProblem problem, int populationSize, int maxIterations) {				
 		return runAlgorithm(new NSGAII(
 				problem, 
-				populationSize,
 				new NondominatedSortingPopulation(), 
 				null,
 				new TournamentSelection(2),	
@@ -172,7 +168,7 @@ public class RDGExample {
 					resourceSet.getBaseDir().toFileString() + 
 					original.eResource().getURI().trimFileExtension().toFileString() + ".csv");
 			FileUtils.touch(file);
-			PopulationUtil.writeObjectives(file, result);
+			PopulationIO.writeObjectives(file, result);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

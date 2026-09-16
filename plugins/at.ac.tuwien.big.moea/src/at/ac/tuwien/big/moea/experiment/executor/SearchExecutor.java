@@ -1,64 +1,82 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Vienna University of Technology.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Martin Fleck (Vienna University of Technology) - initial API and implementation
+ *
+ * Initially developed in the context of ARTIST EU project www.artist-project.eu
+ *******************************************************************************/
 package at.ac.tuwien.big.moea.experiment.executor;
 
-import at.ac.tuwien.big.moea.experiment.instrumenter.SearchInstrumenter;
 import at.ac.tuwien.big.moea.problem.ISearchProblem;
+import at.ac.tuwien.big.moea.problem.SearchProblem;
 import at.ac.tuwien.big.moea.search.algorithm.provider.AbstractRegisteredAlgorithm;
 import at.ac.tuwien.big.moea.search.algorithm.provider.DynamicAlgorithmFactory;
 import at.ac.tuwien.big.moea.util.CastUtil;
 
 import java.io.File;
 import java.io.IOException;
-import java.time.Duration;
-import java.util.ArrayList;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
-import org.moeaframework.analysis.runtime.Instrumenter;
-import org.moeaframework.algorithm.Algorithm;
+import org.moeaframework.Executor;
+import org.moeaframework.Instrumenter;
 import org.moeaframework.algorithm.AlgorithmTerminationException;
-import org.moeaframework.algorithm.extension.CheckpointExtension;
-import org.moeaframework.algorithm.extension.Frequency;
-import org.moeaframework.core.TypedProperties;
-import org.moeaframework.problem.Problem;
+import org.moeaframework.algorithm.Checkpoints;
+import org.moeaframework.core.Algorithm;
+import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.Problem;
+import org.moeaframework.core.TerminationCondition;
 import org.moeaframework.core.comparator.ParetoDominanceComparator;
-import org.moeaframework.core.population.NondominatedPopulation;
 import org.moeaframework.core.spi.AlgorithmFactory;
 import org.moeaframework.core.spi.ProblemFactory;
-import org.moeaframework.core.termination.CompoundTerminationCondition;
-import org.moeaframework.core.termination.MaxElapsedTime;
-import org.moeaframework.core.termination.MaxFunctionEvaluations;
-import org.moeaframework.core.termination.TerminationCondition;
-import org.moeaframework.parallel.DistributedProblem;
-import org.moeaframework.util.progress.ProgressEvent;
+import org.moeaframework.util.TypedProperties;
+import org.moeaframework.util.distributed.DistributedProblem;
+import org.moeaframework.util.progress.ProgressHelper;
 import org.moeaframework.util.progress.ProgressListener;
 
-public class SearchExecutor {
+/**
+ * An executor class that is based on the existing MOEA {@link Executor} and
+ * modified in a way that single execution runs can also be cancelled.
+ */
+public class SearchExecutor extends Executor {
 
+   private static final String ALGORITHM_NAME = "algorithmName";
+   private static final String PROPERTIES_NAME = "properties";
+   private static final String THREADS_NAME = "numberOfThreads";
+
+   private static final String EXECUTOR_SERVICE_NAME = "executorService";
+   private static final String CHECKPOINT_FILE_NAME = "checkpointFile";
+   private static final String CHECKPOINT_FREQUENCY_NAME = "checkpointFrequency";
+   private static final String ALGORITHM_FACTORY_NAME = "algorithmFactory";
+   private static final String PROGRESSHELPER_NAME = "progress";
+   private static final String ISCANCELED_NAME = "isCanceled";
+   private static final String TERMINATION_CONDITIONS = "terminationConditions";
    protected String name;
    protected Algorithm algorithm;
-   protected String algorithmName;
-   protected AlgorithmFactory algorithmFactory;
-   protected Problem problem;
-   protected ProblemFactory problemFactory;
-   protected Class<?> problemClass;
-   protected Object[] problemArguments;
-   protected TypedProperties properties = new TypedProperties();
-   protected int maxEvaluations = 25000;
-   protected long maxTime = -1;
-   protected Instrumenter instrumenter;
-   protected List<ProgressListener> progressListeners = new ArrayList<>();
-   protected File checkpointFile;
-   protected int checkpointFrequency;
-   protected AtomicBoolean isCanceled = new AtomicBoolean(false);
-   protected int numberOfThreads = 1;
-   protected ExecutorService executorService;
-   protected double[] epsilon;
-   protected List<TerminationCondition> terminationConditions = new ArrayList<>();
+   protected Map<String, Field> reflectiveFields = new HashMap<>();
 
-   public SearchExecutor() {}
+   public SearchExecutor() {
+      super();
+
+      final Field[] fields = getClass().getSuperclass().getDeclaredFields();
+      for(final Field field : fields) {
+         field.setAccessible(true);
+         reflectiveFields.put(field.getName(), field);
+      }
+   }
 
    public SearchExecutor(final ISearchProblem<?> problem) {
       this();
@@ -70,302 +88,276 @@ public class SearchExecutor {
       setName(name);
    }
 
-   public SearchExecutor(final String name, final ISearchProblem<?> problem) {
+   public SearchExecutor(final String name, final SearchProblem<?> problem) {
       this();
       setName(name);
       withProblem(problem);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#checkpointEveryIteration()
+    */
+   @Override
    public SearchExecutor checkpointEveryIteration() {
-      this.checkpointFrequency = 1;
-      return this;
+      return (SearchExecutor) super.checkpointEveryIteration();
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#clearProperties()
+    */
+   @Override
    public SearchExecutor clearProperties() {
-      this.properties = new TypedProperties();
-      return this;
+      return (SearchExecutor) super.clearProperties();
    }
 
    protected Algorithm createAlgorithm(final Problem problem) {
-      Algorithm alg = null;
-      if(getAlgorithmName() != null) {
-         AlgorithmFactory factory = getAlgorithmFactory();
-         if(factory == null) {
-            factory = new DynamicAlgorithmFactory();
-         }
-         alg = factory.getAlgorithm(getAlgorithmName(), getTypedProperties(), problem);
-      } else {
-         alg = getAlgorithm();
+      Algorithm algorithm = getAlgorithm();
+
+      if(getCheckpointFile() != null) {
+         algorithm = new Checkpoints(algorithm, getCheckpointFile(), getCheckpointFrequency());
       }
 
-      if(alg != null) {
-         if(getCheckpointFile() != null && getCheckpointFrequency() > 0) {
-            alg.addExtension(new CheckpointExtension(getCheckpointFile(), Frequency.ofIterations(getCheckpointFrequency())));
-         }
-
-         if(getInstrumenter() != null) {
-            alg = getInstrumenter().instrument(alg);
-         }
+      if(getInstrumenter() != null) {
+         algorithm = getInstrumenter().instrument(algorithm);
       }
-      return alg;
-   }
-
-   protected TerminationCondition createTerminationCondition() {
-      final List<TerminationCondition> conditions = new ArrayList<>(terminationConditions);
-      if(maxEvaluations > 0) {
-         conditions.add(new MaxFunctionEvaluations(maxEvaluations));
-      }
-      if(maxTime > 0) {
-         conditions.add(new MaxElapsedTime(Duration.ofMillis(maxTime)));
-      }
-      if(conditions.isEmpty()) {
-         return new MaxFunctionEvaluations(25000);
-      } else if(conditions.size() == 1) {
-         return conditions.get(0);
-      } else {
-         return new CompoundTerminationCondition(conditions.toArray(new TerminationCondition[0]));
-      }
-   }
-
-   public SearchExecutor distributeOn(final int numberOfThreads) {
-      this.numberOfThreads = numberOfThreads;
-      return this;
-   }
-
-   public SearchExecutor distributeOnAllCores() {
-      return distributeOn(Runtime.getRuntime().availableProcessors());
-   }
-
-   public SearchExecutor distributeWith(final ExecutorService executorService) {
-      this.executorService = executorService;
-      return this;
-   }
-
-   public Algorithm getAlgorithm() {
       return algorithm;
    }
 
-   public AlgorithmFactory getAlgorithmFactory() {
-      return algorithmFactory;
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#distributeOn(int)
+    */
+   @Override
+   public SearchExecutor distributeOn(final int numberOfThreads) {
+      return (SearchExecutor) super.distributeOn(numberOfThreads);
    }
 
-   public String getAlgorithmName() {
-      return algorithmName != null ? algorithmName : "<no-algorithm-name>";
+   @Override
+   public SearchExecutor distributeOnAllCores() {
+      return (SearchExecutor) super.distributeOnAllCores();
    }
 
-   public AtomicBoolean getCanceled() {
-      return isCanceled;
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#distributeWith(java.util.concurrent.ExecutorService)
+    */
+   @Override
+   public SearchExecutor distributeWith(final ExecutorService executorService) {
+      return (SearchExecutor) super.distributeWith(executorService);
    }
 
-   public File getCheckpointFile() {
-      return checkpointFile;
+   public Algorithm getAlgorithm() {
+      AlgorithmFactory factory = getAlgorithmFactory();
+      if(factory == null) {
+         factory = new DynamicAlgorithmFactory();
+      }
+
+      final Algorithm algorithm = factory.getAlgorithm(getAlgorithmName(), getTypedProperties().getProperties(),
+            getProblem());
+
+      return algorithm;
    }
 
-   public int getCheckpointFrequency() {
-      return checkpointFrequency;
+   protected AlgorithmFactory getAlgorithmFactory() {
+      return getField(ALGORITHM_FACTORY_NAME, AlgorithmFactory.class);
    }
 
-   public ExecutorService getExecutorService() {
-      return executorService;
+   protected String getAlgorithmName() {
+      return getField(ALGORITHM_NAME, String.class, "<no-algorithm-name>");
    }
 
-   public Instrumenter getInstrumenter() {
-      return instrumenter;
+   protected AtomicBoolean getCanceled() {
+      return getField(ISCANCELED_NAME, AtomicBoolean.class);
+   }
+
+   protected File getCheckpointFile() {
+      return getField(CHECKPOINT_FILE_NAME, File.class);
+   }
+
+   protected int getCheckpointFrequency() {
+      return getField(CHECKPOINT_FREQUENCY_NAME, Integer.class, 0);
+   }
+
+   protected ExecutorService getExecutorService() {
+      return getField(EXECUTOR_SERVICE_NAME, ExecutorService.class);
+   }
+
+   protected <T> T getField(final String fieldName, final Class<T> clazz) {
+      try {
+         return CastUtil.asClass(reflectiveFields.get(fieldName).get(this), clazz);
+      } catch(IllegalArgumentException | IllegalAccessException e) {
+         e.printStackTrace();
+         return null;
+      }
+   }
+
+   protected <T> T getField(final String fieldName, final Class<T> clazz, final T defaultValue) {
+      try {
+         return CastUtil.asClass(reflectiveFields.get(fieldName).get(this), clazz);
+      } catch(IllegalArgumentException | IllegalAccessException e) {
+         e.printStackTrace();
+         return defaultValue;
+      }
    }
 
    public String getName() {
-      if(name == null && getAlgorithmName() != null) {
-         return getAlgorithmName();
+      if(name == null && getAlgorithm() != null) {
+         return getAlgorithm().getClass().getSimpleName();
       }
       return name;
    }
 
-   public int getNumberOfThreads() {
-      return numberOfThreads;
+   protected int getNumberOfThreads() {
+      return getField(THREADS_NAME, Integer.class, 1);
    }
 
    public Problem getProblem() {
-      if(problem != null) {
-         return problem;
+      Method getProblemMethod;
+      try {
+         getProblemMethod = getClass().getSuperclass().getSuperclass().getDeclaredMethod("getProblemInstance");
+         getProblemMethod.setAccessible(true);
+         return CastUtil.asClass(getProblemMethod.invoke(this), Problem.class);
+      } catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+            | SecurityException e) {
+         return null;
       }
-      if(problemClass != null) {
-         try {
-            if(problemArguments != null && problemArguments.length > 0) {
-               for(final java.lang.reflect.Constructor<?> ctor : problemClass.getConstructors()) {
-                  final Class<?>[] paramTypes = ctor.getParameterTypes();
-                  if(paramTypes.length == problemArguments.length) {
-                     boolean match = true;
-                     for(int i = 0; i < paramTypes.length; i++) {
-                        if(problemArguments[i] != null && !paramTypes[i].isAssignableFrom(problemArguments[i].getClass())) {
-                           match = false;
-                           break;
-                        }
-                     }
-                     if(match) {
-                        return CastUtil.asClass(ctor.newInstance(problemArguments), Problem.class);
-                     }
-                  }
-               }
-            } else {
-               return CastUtil.asClass(problemClass.getDeclaredConstructor().newInstance(), Problem.class);
-            }
-         } catch(final Exception e) {
-            e.printStackTrace();
-         }
-      }
-      if(problemFactory != null && name != null) {
-         return problemFactory.getProblem(name);
-      }
-      return null;
    }
 
-   public Class<?> getProblemClass() {
-      return problemClass;
+   protected ProgressHelper getProgressHelper() {
+      return getField(PROGRESSHELPER_NAME, ProgressHelper.class);
    }
 
-   public Object[] getProblemArguments() {
-      return problemArguments;
+   @SuppressWarnings("unchecked")
+   protected List<TerminationCondition> getTerminationConditions() {
+      return getField(TERMINATION_CONDITIONS, List.class);
    }
 
-   public ProblemFactory getProblemFactory() {
-      return problemFactory;
-   }
-
-   public List<ProgressListener> getProgressListeners() {
-      return progressListeners;
-   }
-
-   public List<TerminationCondition> getTerminationConditions() {
-      return terminationConditions;
-   }
-
-   public TypedProperties getTypedProperties() {
-      return properties;
-   }
-
-   public boolean isCanceled() {
-      return isCanceled.get();
+   protected TypedProperties getTypedProperties() {
+      return getField(PROPERTIES_NAME, TypedProperties.class);
    }
 
    protected NondominatedPopulation newArchivePopulation() {
-      return new NondominatedPopulation(new ParetoDominanceComparator());
-   }
-
-   protected void notifyProgress(final int currentSeed, final int totalSeeds, final int currentNFE, final int maxNFE,
-         final double elapsedTime, final double remainingTime) {
-      final ProgressEvent event = new ProgressEvent(this, currentSeed, totalSeeds, currentNFE, maxNFE, elapsedTime, remainingTime);
-      for(final ProgressListener listener : progressListeners) {
-         listener.progressUpdate(event);
+      NondominatedPopulation result;
+      try {
+         final Method newArchiveMethod = getClass().getSuperclass().getSuperclass().getDeclaredMethod("newArchive");
+         newArchiveMethod.setAccessible(true);
+         result = CastUtil.asClass(newArchiveMethod.invoke(this), NondominatedPopulation.class);
+      } catch(IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException
+            | SecurityException e) {
+         result = new NondominatedPopulation(new ParetoDominanceComparator());
       }
+      return result;
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#resetCheckpointFile()
+    */
+   @Override
    public SearchExecutor resetCheckpointFile() throws IOException {
-      if(checkpointFile != null && checkpointFile.exists()) {
-         checkpointFile.delete();
-      }
-      return this;
+      return (SearchExecutor) super.resetCheckpointFile();
    }
 
+   @Override
    public NondominatedPopulation run() {
       setCanceled(false);
-      return runSingleSeed(1, 1, createTerminationCondition());
+      final int maxEvaluations = getTypedProperties().getInt("maxEvaluations", 25000);
+      getProgressHelper().start(1, maxEvaluations, Long.MAX_VALUE);
+      final NondominatedPopulation population = runSingleSeed(1, 1, createTerminationCondition());
+      getProgressHelper().stop();
+      return population;
+      // return runSingleSeed(1, 1, createTerminationCondition());
    }
 
-   protected NondominatedPopulation runAlgorithm(final Problem problem, final TerminationCondition terminationCondition) {
-      return runAlgorithm(problem, terminationCondition, 1, 1);
-   }
-
-   protected NondominatedPopulation runAlgorithm(final Problem problem, final TerminationCondition terminationCondition,
-         final int currentSeed, final int totalSeeds) {
+   protected NondominatedPopulation runAlgorithm(final Problem problem,
+         final TerminationCondition terminationCondition) {
       final NondominatedPopulation result = newArchivePopulation();
-      Algorithm alg = null;
       try {
-         alg = createAlgorithm(problem);
-         this.algorithm = alg;
+         final Algorithm algorithm = createAlgorithm(problem);
 
-         terminationCondition.initialize(alg);
+         // Create any initial conditions for termination condition
+         terminationCondition.initialize(algorithm);
 
-         while(!alg.isTerminated() && !terminationCondition.shouldTerminate(alg)) {
+         while(!algorithm.isTerminated() && !terminationCondition.shouldTerminate(algorithm)) {
             if(isCanceled()) {
                return null;
             }
-            alg.step();
-            notifyProgress(currentSeed, totalSeeds, alg.getNumberOfEvaluations(), maxEvaluations, 0, 0);
+
+            algorithm.step();
+            getProgressHelper().setCurrentNFE(algorithm.getNumberOfEvaluations());
          }
 
-         result.addAll(alg.getResult());
+         result.addAll(algorithm.getResult());
       } finally {
-         if(alg != null) {
-            alg.terminate();
+         if(algorithm != null) {
+            algorithm.terminate();
          }
       }
       return result;
    }
 
-   public List<NondominatedPopulation> runSeeds(final int numberOfSeeds) {
-      final List<NondominatedPopulation> results = new ArrayList<>();
-      setCanceled(false);
-      final long startTime = System.currentTimeMillis();
-      for(int seed = 1; seed <= numberOfSeeds; seed++) {
-         if(isCanceled()) {
-            break;
-         }
-         final long seedStartTime = System.currentTimeMillis();
-         final NondominatedPopulation result = runSingleSeed(seed, numberOfSeeds, createTerminationCondition());
-         final double elapsed = (System.currentTimeMillis() - startTime) / 1000.0;
-         final double seedElapsed = (System.currentTimeMillis() - seedStartTime) / 1000.0;
-         final double remaining = (numberOfSeeds - seed) * seedElapsed;
-         notifyProgress(seed, numberOfSeeds, maxEvaluations, maxEvaluations, elapsed, remaining);
-         if(result != null) {
-            results.add(result);
-         }
-      }
-      return results;
-   }
-
    protected NondominatedPopulation runSingleSeed(final int seed, final int numberOfSeeds, final int maxEvaluations) {
       this.withMaxEvaluations(maxEvaluations);
+
       return runSingleSeed(seed, numberOfSeeds, createTerminationCondition());
    }
 
+   /**
+    * MOEA 2.12 changed parameter "maxEvaluations" to a termination condition, which is:
+    * - Max function evaluations
+    * - Max time elepased
+    * - Compound
+    */
+   @Override
    protected NondominatedPopulation runSingleSeed(final int seed, final int numberOfSeeds,
          final TerminationCondition terminationCondition) {
-      if(getAlgorithmName() == null && algorithm == null) {
+      if(getAlgorithmName() == null) {
          throw new IllegalArgumentException("No algorithm specified");
       }
 
-      Problem prob = null;
-      ExecutorService execService = null;
+      Problem problem = null;
+      ExecutorService executorService = null;
 
       try {
-         prob = getProblem();
-         if(getExecutorService() != null) {
-            prob = new DistributedProblem(prob, getExecutorService());
-         } else if(getNumberOfThreads() > 1) {
-            execService = Executors.newFixedThreadPool(getNumberOfThreads());
-            prob = new DistributedProblem(prob, execService);
-         }
+         problem = getProblem();
+         try {
+            if(getExecutorService() != null) {
+               problem = new DistributedProblem(problem, getExecutorService());
+            } else if(getNumberOfThreads() > 1) {
+               executorService = Executors.newFixedThreadPool(getNumberOfThreads());
+               problem = new DistributedProblem(problem, executorService);
+            }
 
-         return runAlgorithm(prob, terminationCondition, seed, numberOfSeeds);
-      } catch(final AlgorithmTerminationException e) {
-         System.err.println(e.getMessage());
-         return null;
-      } catch(final SecurityException | IllegalArgumentException ex) {
+            return runAlgorithm(problem, terminationCondition);
+         } catch(final AlgorithmTerminationException e) {
+            System.err.println(e.getMessage());
+            return null;
+         } finally {
+            if(executorService != null) {
+               executorService.shutdown();
+            }
+         }
+      } catch(SecurityException | IllegalArgumentException ex) {
          ex.printStackTrace();
          System.err.println(ex.getMessage());
          return null;
       } finally {
-         if(execService != null) {
-            execService.shutdown();
-         }
-         if(prob != null) {
-            prob.close();
+         if(problem != null) {
+            problem.close();
          }
       }
    }
 
    protected void setCanceled(final boolean cancel) {
-      isCanceled.set(cancel);
+      try {
+         final AtomicBoolean isCanceled = CastUtil.asClass(reflectiveFields.get(ISCANCELED_NAME).get(this),
+               AtomicBoolean.class);
+         isCanceled.set(cancel);
+      } catch(IllegalArgumentException | IllegalAccessException e) {
+         e.printStackTrace();
+      }
    }
 
    public SearchExecutor setName(final String name) {
@@ -384,14 +376,22 @@ public class SearchExecutor {
       return getClass().getSimpleName() + "['" + getName() + "']";
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#usingAlgorithmFactory(org.moeaframework.core.spi.AlgorithmFactory)
+    */
+   @Override
    public SearchExecutor usingAlgorithmFactory(final AlgorithmFactory algorithmFactory) {
-      this.algorithmFactory = algorithmFactory;
-      return this;
+      return (SearchExecutor) super.usingAlgorithmFactory(algorithmFactory);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#usingProblemFactory(org.moeaframework.core.spi.ProblemFactory)
+    */
+   @Override
    public SearchExecutor usingProblemFactory(final ProblemFactory problemFactory) {
-      this.problemFactory = problemFactory;
-      return this;
+      return (SearchExecutor) super.usingProblemFactory(problemFactory);
    }
 
    public <A extends Algorithm> SearchExecutor withAlgorithm(final A algorithm) {
@@ -403,192 +403,226 @@ public class SearchExecutor {
       }.register());
    }
 
+   @Override
    public SearchExecutor withAlgorithm(final String algorithmName) {
-      this.algorithmName = algorithmName;
-      return this;
+      return (SearchExecutor) super.withAlgorithm(algorithmName);
    }
 
+   @Override
    public SearchExecutor withCheckpointFile(final File checkpointFile) {
-      this.checkpointFile = checkpointFile;
-      return this;
+      return (SearchExecutor) super.withCheckpointFile(checkpointFile);
    }
 
+   @Override
    public SearchExecutor withCheckpointFrequency(final int checkpointFrequency) {
-      this.checkpointFrequency = checkpointFrequency;
-      return this;
+      return (SearchExecutor) super.withCheckpointFrequency(checkpointFrequency);
    }
 
+   @Override
    public SearchExecutor withEpsilon(final double... epsilon) {
-      this.epsilon = epsilon;
-      return this;
+      return (SearchExecutor) super.withEpsilon(epsilon);
    }
 
+   @Override
    public SearchExecutor withInstrumenter(final Instrumenter instrumenter) {
-      this.instrumenter = instrumenter;
-      return this;
+      return (SearchExecutor) super.withInstrumenter(instrumenter);
    }
 
+   @Override
    public SearchExecutor withMaxEvaluations(final int maxEvaluations) {
-      this.maxEvaluations = maxEvaluations;
-      this.properties.setInt("maxEvaluations", maxEvaluations);
-      return this;
+      return (SearchExecutor) super.withMaxEvaluations(maxEvaluations);
    }
 
+   @Override
    public SearchExecutor withMaxTime(final long maxTime) {
-      this.maxTime = maxTime;
-      this.properties.setLong("maxTime", maxTime);
-      return this;
+      return (SearchExecutor) super.withMaxTime(maxTime);
    }
 
    public SearchExecutor withProblem(final ISearchProblem<?> problem) {
-      if(problem != null) {
-         this.problemClass = problem.getClass();
-         this.problemArguments = new Object[] { problem.getFitnessFunction(), problem.getSolutionGenerator() };
-      }
-      return this;
+      return (SearchExecutor) super.withProblem(problem);
+      // super.withProblemClass(problem.getClass(), problem.getFitnessFunction(), problem.getSolutionGenerator());
+      // return this;
    }
 
-   public SearchExecutor withProblem(final Problem problem) {
-      this.problem = problem;
-      return this;
-   }
-
+   @Override
    public SearchExecutor withProblem(final String problemName) {
-      if(problemFactory != null) {
-         this.problem = problemFactory.getProblem(problemName);
-      }
-      return this;
+      return (SearchExecutor) super.withProblem(problemName);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProblemClass(java.lang.Class, java.lang.Object[])
+    */
+   @Override
    public SearchExecutor withProblemClass(final Class<?> problemClass, final Object... problemArguments) {
-      this.problemClass = problemClass;
-      this.problemArguments = problemArguments;
-      return this;
+      return (SearchExecutor) super.withProblemClass(problemClass, problemArguments);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProblemClass(java.lang.String, java.lang.Object[])
+    */
+   @Override
    public SearchExecutor withProblemClass(final String problemClassName, final Object... problemArguments)
          throws ClassNotFoundException {
-      this.problemClass = Class.forName(problemClassName);
-      this.problemArguments = problemArguments;
-      return this;
+      return (SearchExecutor) super.withProblemClass(problemClassName, problemArguments);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProgressListener(org.moeaframework.util.progress.ProgressListener)
+    */
+   @Override
    public SearchExecutor withProgressListener(final ProgressListener listener) {
-      if(listener != null && !progressListeners.contains(listener)) {
-         this.progressListeners.add(listener);
-      }
-      return this;
+      return (SearchExecutor) super.withProgressListener(listener);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperties(java.util.Properties)
+    */
+   @Override
    public SearchExecutor withProperties(final Properties properties) {
-      if(properties != null) {
-         for(final String key : properties.stringPropertyNames()) {
-            this.properties.setString(key, properties.getProperty(key));
-         }
-      }
-      return this;
+      return (SearchExecutor) super.withProperties(properties);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, boolean)
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final boolean value) {
-      this.properties.setBoolean(key, value);
-      return this;
+      return (SearchExecutor) super.withProperty(key, value);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, byte)
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final byte value) {
-      this.properties.setByte(key, value);
-      return this;
+      return (SearchExecutor) super.withProperty(key, value);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, byte[])
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final byte[] values) {
-      this.properties.setByteArray(key, values);
-      return this;
+      return (SearchExecutor) super.withProperty(key, values);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, double)
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final double value) {
-      this.properties.setDouble(key, value);
-      return this;
+      return (SearchExecutor) super.withProperty(key, value);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, double[])
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final double[] values) {
-      this.properties.setDoubleArray(key, values);
-      return this;
+      return (SearchExecutor) super.withProperty(key, values);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, float)
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final float value) {
-      this.properties.setFloat(key, value);
-      return this;
+      return (SearchExecutor) super.withProperty(key, value);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, float[])
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final float[] values) {
-      this.properties.setFloatArray(key, values);
-      return this;
+      return (SearchExecutor) super.withProperty(key, values);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, int)
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final int value) {
-      this.properties.setInt(key, value);
-      return this;
+      return (SearchExecutor) super.withProperty(key, value);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, int[])
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final int[] values) {
-      this.properties.setIntArray(key, values);
-      return this;
+      return (SearchExecutor) super.withProperty(key, values);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, long)
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final long value) {
-      this.properties.setLong(key, value);
-      return this;
+      return (SearchExecutor) super.withProperty(key, value);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, long[])
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final long[] values) {
-      this.properties.setLongArray(key, values);
-      return this;
+      return (SearchExecutor) super.withProperty(key, values);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, short)
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final short value) {
-      this.properties.setShort(key, value);
-      return this;
+      return (SearchExecutor) super.withProperty(key, value);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, short[])
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final short[] values) {
-      this.properties.setShortArray(key, values);
-      return this;
+      return (SearchExecutor) super.withProperty(key, values);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, java.lang.String)
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final String value) {
-      this.properties.setString(key, value);
-      return this;
+      return (SearchExecutor) super.withProperty(key, value);
    }
 
+   /*
+    * (non-Javadoc)
+    * @see org.moeaframework.Executor#withProperty(java.lang.String, java.lang.String[])
+    */
+   @Override
    public SearchExecutor withProperty(final String key, final String[] values) {
-      this.properties.setStringArray(key, values);
-      return this;
+      return (SearchExecutor) super.withProperty(key, values);
    }
 
-   public SearchExecutor withSameProblemAs(final Instrumenter instrumenter) {
-      if(instrumenter instanceof SearchInstrumenter) {
-         final SearchInstrumenter searchInst = (SearchInstrumenter) instrumenter;
-         if(searchInst.getProblem() != null) {
-            withProblem(searchInst.getProblem());
-         } else if(searchInst.getProblemClass() != null) {
-            withProblemClass(searchInst.getProblemClass(), searchInst.getProblemArguments());
-         } else if(searchInst.getProblemName() != null) {
-            withProblem(searchInst.getProblemName());
-         }
-      }
-      return this;
-   }
-
-   public SearchExecutor withSameProblemAs(final SearchExecutor executor) {
-      if(executor != null && executor.getProblem() != null) {
-         withProblem(executor.getProblem());
-      }
-      return this;
-   }
-
+   @Override
    public SearchExecutor withTerminationCondition(final TerminationCondition condition) {
-      if(condition != null) {
-         this.terminationConditions.add(condition);
-      }
-      return this;
+      return (SearchExecutor) super.withTerminationCondition(condition);
    }
 }

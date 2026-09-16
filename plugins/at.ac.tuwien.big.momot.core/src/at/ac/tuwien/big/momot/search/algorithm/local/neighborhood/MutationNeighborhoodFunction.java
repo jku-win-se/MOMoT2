@@ -19,7 +19,7 @@ import at.ac.tuwien.big.momot.problem.solution.TransformationSolution;
 import java.util.Iterator;
 
 import org.moeaframework.core.Solution;
-import org.moeaframework.core.operator.Variation;
+import org.moeaframework.core.Variation;
 
 public class MutationNeighborhoodFunction extends AbstractNeighborhoodFunction<TransformationSolution> {
 

@@ -1,3 +1,15 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Vienna University of Technology.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Martin Fleck (Vienna University of Technology) - initial API and implementation
+ *
+ * Initially developed in the context of ARTIST EU project www.artist-project.eu
+ *******************************************************************************/
 package at.ac.tuwien.big.moea.print;
 
 import at.ac.tuwien.big.moea.problem.solution.variable.IPlaceholderVariable;
@@ -13,7 +25,7 @@ import java.util.Map.Entry;
 import org.apache.commons.io.output.ByteArrayOutputStream;
 import org.apache.commons.lang3.StringUtils;
 import org.moeaframework.core.Solution;
-import org.moeaframework.core.variable.Variable;
+import org.moeaframework.core.Variable;
 
 public class SolutionWriter<S extends Solution> implements ISolutionWriter<S> {
    private static final String NEWLINE = "\n";
@@ -106,7 +118,7 @@ public class SolutionWriter<S extends Solution> implements ISolutionWriter<S> {
 
    @Override
    public String getConstraintData(final S solution, final int index) {
-      return getConstraintData(solution.getConstraintValue(index));
+      return getConstraintData(solution.getConstraint(index));
    }
 
    @Override
@@ -132,7 +144,7 @@ public class SolutionWriter<S extends Solution> implements ISolutionWriter<S> {
 
    @Override
    public String getObjectiveData(final S solution, final int index) {
-      return getObjectiveData(solution.getObjectiveValue(index));
+      return getObjectiveData(solution.getObjective(index));
    }
 
    @Override
@@ -181,7 +193,7 @@ public class SolutionWriter<S extends Solution> implements ISolutionWriter<S> {
    protected String printConstraints(final S solution) {
       String txt = "";
       for(int i = 0; i < solution.getNumberOfConstraints(); i++) {
-         txt += printConstraint(i, solution.getConstraintValue(i));
+         txt += printConstraint(i, solution.getConstraint(i));
       }
       return txt;
    }
@@ -197,7 +209,7 @@ public class SolutionWriter<S extends Solution> implements ISolutionWriter<S> {
    protected String printObjectives(final S solution) {
       String txt = "";
       for(int i = 0; i < solution.getNumberOfObjectives(); i++) {
-         txt += printObjective(i, solution.getObjectiveValue(i));
+         txt += printObjective(i, solution.getObjective(i));
       }
       return txt;
    }

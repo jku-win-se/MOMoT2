@@ -1,15 +1,13 @@
 package at.ac.tuwien.big.momot.examples.modularization.jsme.moea;
 
-import at.ac.tuwien.big.moea.experiment.executor.SearchExecutor;
 import at.ac.tuwien.big.moea.experiment.executor.listener.SeedRuntimePrintListener;
-import at.ac.tuwien.big.moea.experiment.instrumenter.SearchInstrumenter;
 import at.ac.tuwien.big.momot.examples.modularization.jsme.metric.ModelMetrics;
 
 import java.util.List;
 
-import org.moeaframework.algorithm.extension.Frequency;
-import org.moeaframework.analysis.runtime.Instrumenter;
-import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.Executor;
+import org.moeaframework.Instrumenter;
+import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 
 public class ModularizationSearch {
@@ -27,9 +25,9 @@ public class ModularizationSearch {
    }
 
    public static void main(final String[] args) {
-      final Instrumenter instrumenter = new SearchInstrumenter()
+      final Instrumenter instrumenter = new Instrumenter()
             .withProblemClass(ModularizationProblem.class, ModularizationInstances.createMtunis())
-            .withFrequency(Frequency.ofEvaluations(POPULATION_SIZE));
+            .withFrequency(POPULATION_SIZE);
 
       // String operators = "hux"; // Half-uniform crossover (HUX) operator. Half of the non-matching bits are swapped
       // between the two parents.
@@ -37,7 +35,7 @@ public class ModularizationSearch {
       operators += "+bf"; // Bit flip mutation operator. Each bit is flipped (switched from a {@code 0} to a {@code 1},
                           // or vice versa)
 
-      final SearchExecutor executor = new SearchExecutor().withSameProblemAs(instrumenter).withAlgorithm("NSGAIII")
+      final Executor executor = new Executor().withSameProblemAs(instrumenter).withAlgorithm("NSGAIII")
             .withProperty("populationSize", POPULATION_SIZE).withProperty("maxEvaluations", MAX_EVALUATIONS)
             .withProperty("divisionsOuter", 6).withProperty("divisionsInner", 0).withProperty("operators", operators)
             .withProperty("1x.rate", 1.0).withProperty("bf.rate", 0.1)
@@ -57,9 +55,9 @@ public class ModularizationSearch {
 
    protected static void printObjectives(final NondominatedPopulation result) {
       for(final Solution solution : result) {
-         System.out.print(Double.toString(solution.getObjectiveValue(0)));
+         System.out.print(Double.toString(solution.getObjective(0)));
          for(int i = 1; i < solution.getNumberOfObjectives(); i++) {
-            System.out.print(" " + Double.toString(solution.getObjectiveValue(i)));
+            System.out.print(" " + Double.toString(solution.getObjective(i)));
          }
          System.out.println();
       }
@@ -76,7 +74,7 @@ public class ModularizationSearch {
          System.out.println(modularization);
          System.out.println(metrics);
          System.out.println("-----");
-         System.out.println("--------------------------");
       }
+      System.out.println("--------------------------");
    }
 }

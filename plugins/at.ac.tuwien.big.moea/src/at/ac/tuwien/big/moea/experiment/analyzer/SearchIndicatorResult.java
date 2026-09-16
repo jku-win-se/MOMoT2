@@ -8,6 +8,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import org.apache.commons.math3.stat.descriptive.UnivariateStatistic;
+import org.moeaframework.Analyzer.IndicatorResult;
 
 public class SearchIndicatorResult {
 
@@ -15,13 +16,22 @@ public class SearchIndicatorResult {
 
    protected final double[] values;
 
-   protected List<String> indifferentAlgorithms = new ArrayList<>();
+   protected List<String> indifferentAlgorithms;
 
-   protected List<AlgorithmEffectSize> algorithmEffectSizes = new ArrayList<>();
+   protected List<AlgorithmEffectSize> algorithmEffectSizes;
 
    protected Double aggregateValue;
 
+   public SearchIndicatorResult(final IndicatorResult result) {
+      this.algorithmEffectSizes = new ArrayList<>();
+      this.indicator = result.getIndicator();
+      this.values = result.getValues();
+      this.indifferentAlgorithms = result.getIndifferentAlgorithms();
+      this.aggregateValue = result.getAggregateValue();
+   }
+
    public SearchIndicatorResult(final String indicator, final double[] values) {
+      this.algorithmEffectSizes = new ArrayList<>();
       this.indicator = indicator;
       this.values = values;
    }
@@ -43,7 +53,7 @@ public class SearchIndicatorResult {
    }
 
    public int getCount() {
-      return values != null ? values.length : 0;
+      return values.length;
    }
 
    public String getIndicator() {
@@ -55,11 +65,11 @@ public class SearchIndicatorResult {
    }
 
    public double getStatistic(final UnivariateStatistic statistic) {
-      return values != null && values.length > 0 ? statistic.evaluate(values) : Double.NaN;
+      return statistic.evaluate(values);
    }
 
    public double[] getValues() {
-      return values != null ? values.clone() : new double[0];
+      return values.clone();
    }
 
    void print(final PrintStream ps, final boolean showAggregate, final boolean showStatisticalSignificance,

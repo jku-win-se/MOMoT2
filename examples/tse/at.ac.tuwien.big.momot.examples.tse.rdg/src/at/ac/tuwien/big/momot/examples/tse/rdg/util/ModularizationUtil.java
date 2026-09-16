@@ -9,8 +9,8 @@ import org.apache.commons.io.FileUtils;
 import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.ecore.resource.Resource;
 import org.eclipse.emf.henshin.model.resource.HenshinResourceSet;
-import at.ac.tuwien.big.moea.util.PopulationUtil;
-import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.core.NondominatedPopulation;
+import org.moeaframework.core.PopulationIO;
 import org.moeaframework.core.Solution;
 
 import at.ac.tuwien.big.momot.examples.tse.metric.ruletype.RuleTypePackage;
@@ -147,7 +147,7 @@ public class ModularizationUtil {
 					resourceSet.getBaseDir().toFileString() + 
 					original.eResource().getURI().trimFileExtension().toFileString() + ".csv");
 			FileUtils.touch(file);
-			PopulationUtil.writeObjectives(file, result);
+			PopulationIO.writeObjectives(file, result);
 		} catch (IOException e) {
 			e.printStackTrace();
 		}

@@ -7,17 +7,16 @@ import at.ac.tuwien.big.moea.search.algorithm.provider.IRegisteredAlgorithm;
 import at.ac.tuwien.big.moea.util.CastUtil;
 
 import java.io.File;
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.moeaframework.algorithm.Algorithm;
-import org.moeaframework.algorithm.extension.Frequency;
-import org.moeaframework.analysis.runtime.Collector;
-import org.moeaframework.analysis.runtime.Instrumenter;
-import org.moeaframework.core.population.NondominatedPopulation;
+import org.moeaframework.Executor;
+import org.moeaframework.Instrumenter;
+import org.moeaframework.analysis.collector.Collector;
+import org.moeaframework.core.Algorithm;
+import org.moeaframework.core.NondominatedPopulation;
 import org.moeaframework.core.Solution;
 import org.moeaframework.util.progress.ProgressListener;
 
@@ -27,6 +26,7 @@ public class SearchExperiment<S extends Solution> extends IndicatorConfiguration
 
    protected ISearchOrchestration<S> searchOrchestration;
 
+   // instrumentation
    protected File referenceSetFile = null;
    protected int frequency = DEFAULT_FREQUENCY;
 
@@ -38,12 +38,15 @@ public class SearchExperiment<S extends Solution> extends IndicatorConfiguration
    protected boolean elapsedTime;
    protected boolean populationSize;
 
+   // execution
    protected int maxEvaluations;
    protected double[] epsilon;
    protected List<ProgressListener> progressListeners = new ArrayList<>();
 
+   // run
    protected int numberOfRuns = 1;
 
+   // result
    protected Map<SearchExecutor, List<NondominatedPopulation>> results = new HashMap<>();
 
    public SearchExperiment() {}
@@ -65,7 +68,7 @@ public class SearchExperiment<S extends Solution> extends IndicatorConfiguration
       this.progressListeners.add(progressListener);
    }
 
-   protected SearchExecutor attachProgressListeners(final SearchExecutor executor) {
+   protected <T extends Executor> T attachProgressListeners(final T executor) {
       for(final ProgressListener listener : getProgressListeners()) {
          executor.withProgressListener(listener);
       }
@@ -89,14 +92,10 @@ public class SearchExperiment<S extends Solution> extends IndicatorConfiguration
 
       final File referenceFile = getReferenceSetFile();
       if(referenceFile != null) {
-         try {
-            instrumenter.withReferenceSet(referenceFile);
-         } catch(final IOException e) {
-            e.printStackTrace();
-         }
+         instrumenter.withReferenceSet(referenceFile);
       }
 
-      instrumenter.withFrequency(Frequency.ofEvaluations(getFrequency()));
+      instrumenter.withFrequency(getFrequency());
       instrumenter.withEpsilon(getEpsilon());
 
       if(isAdaptiveMultimethodVariation()) {

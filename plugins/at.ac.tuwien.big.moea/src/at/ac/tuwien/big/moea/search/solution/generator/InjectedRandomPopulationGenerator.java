@@ -41,23 +41,16 @@ public class InjectedRandomPopulationGenerator<S extends Solution> extends Rando
 
    @Override
    public S[] initialize() {
-      return initialize(getPopulationSize());
-   }
-
-   @Override
-   public S[] initialize(final int count) {
       @SuppressWarnings("unchecked")
-      final S[] population = (S[]) new Solution[count];
+      final S[] population = (S[]) new Solution[getPopulationSize()];
 
       int i = 0;
-      while(i < getInjectedSolutions().size() && i < count) {
-         population[i] = getInjectedSolutions().get(i);
-         i++;
+      while(i < getInjectedSolutions().size() && i < getInjectedSolutions().size() && i < getPopulationSize()) {
+         population[i] = getInjectedSolutions().get(i++);
       }
 
-      while(i < count) {
-         population[i] = getSolutionGenerator().createRandomSolution();
-         i++;
+      while(i < getPopulationSize()) {
+         population[i++] = getSolutionGenerator().createRandomSolution();
       }
 
       return population;
@@ -67,4 +60,5 @@ public class InjectedRandomPopulationGenerator<S extends Solution> extends Rando
    public void setInjectedSolutions(final List<S> injectedSolutions) {
       this.injectedSolutions = injectedSolutions;
    }
+
 }

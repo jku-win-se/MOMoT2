@@ -1,9 +1,22 @@
+/*******************************************************************************
+ * Copyright (c) 2015 Vienna University of Technology.
+ * All rights reserved. This program and the accompanying materials
+ * are made available under the terms of the Eclipse Public License v1.0
+ * which accompanies this distribution, and is available at
+ * http://www.eclipse.org/legal/epl-v10.html
+ *
+ * Contributors:
+ * Martin Fleck (Vienna University of Technology) - initial API and implementation
+ *
+ * Initially developed in the context of ARTIST EU project www.artist-project.eu
+ *******************************************************************************/
 package at.ac.tuwien.big.moea.problem.solution.variable;
 
 import at.ac.tuwien.big.moea.util.TextUtil;
 import at.ac.tuwien.big.moea.util.random.RandomInteger;
 
-import org.moeaframework.core.variable.Variable;
+import org.moeaframework.core.Variable;
+import org.moeaframework.core.variable.EncodingUtils;
 import org.moeaframework.core.variable.RealVariable;
 
 public class RandomIntegerVariable implements Variable {
@@ -12,7 +25,6 @@ public class RandomIntegerVariable implements Variable {
 
    private final RandomInteger randomInteger;
    private Integer value;
-   private String name;
 
    public RandomIntegerVariable(final int lowerBound, final int upperBound) {
       randomInteger = new RandomInteger(lowerBound, upperBound);
@@ -26,9 +38,7 @@ public class RandomIntegerVariable implements Variable {
 
    @Override
    public RandomIntegerVariable copy() {
-      final RandomIntegerVariable copy = new RandomIntegerVariable(getValue(), randomInteger.getLowerBound(), randomInteger.getUpperBound());
-      copy.setName(getName());
-      return copy;
+      return new RandomIntegerVariable(getValue(), randomInteger.getLowerBound(), randomInteger.getUpperBound());
    }
 
    @Override
@@ -66,30 +76,6 @@ public class RandomIntegerVariable implements Variable {
    }
 
    @Override
-   public String getName() {
-      return name;
-   }
-
-   public void setName(final String name) {
-      this.name = name;
-   }
-
-   @Override
-   public String getDefinition() {
-      return "int[" + getLowerBound() + ", " + getUpperBound() + "]";
-   }
-
-   @Override
-   public String encode() {
-      return String.valueOf(getValue());
-   }
-
-   @Override
-   public void decode(final String value) {
-      setValue(Integer.parseInt(value));
-   }
-
-   @Override
    public int hashCode() {
       final int prime = 31;
       int result = 1;
@@ -114,8 +100,8 @@ public class RandomIntegerVariable implements Variable {
    }
 
    public RealVariable toRealVariable() {
-      final RealVariable var = new RealVariable(randomInteger.getLowerBound(), randomInteger.getUpperBound() - 1);
-      var.setValue(getValue());
+      final RealVariable var = EncodingUtils.newInt(randomInteger.getLowerBound(), randomInteger.getUpperBound() - 1);
+      EncodingUtils.setInt(var, getValue());
       return var;
    }
 
