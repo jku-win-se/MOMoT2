@@ -10,11 +10,12 @@ MOMoT combines model-driven engineering (EMF/Henshin) with search-based optimiza
 
 ## Repository branches
 
-This repository has two active branches. They target different workflows but share the same core technology.
+This repository has three active branches. They target different workflows but share the same core technology.
 
 | Branch | Purpose | Get started |
 | --- | --- | --- |
-| **`main`** (this branch) | Full **Eclipse IDE** distribution — plugins, wizards, all case-study examples, [update site](https://jku-win-se.github.io/MOMoT2/eclipse/updates/latest/develop/) | [Install in Eclipse](#install-in-eclipse) · [Build](#build) |
+| **`main`** (this branch) | Full **Eclipse IDE** distribution with **MOEA Framework 2.12** — plugins, wizards, all case-study examples, [update site](https://jku-win-se.github.io/MOMoT2/eclipse/updates/latest/develop/) | [Install in Eclipse](#install-in-eclipse) · [Build](#build) |
+| **`moea-5.1`** | Same Eclipse distribution, ported to **MOEA Framework 5.1** | [Clone `moea-5.1`](https://github.com/jku-win-se/MOMoT2/tree/moea-5.1) · [MIGRATION.md](https://github.com/jku-win-se/MOMoT2/blob/moea-5.1/MIGRATION.md) |
 | **`standalone`** | **Headless REST** runner, Docker, MCP server for AI agents, E2E test suite | [Clone `standalone`](https://github.com/jku-win-se/MOMoT2/tree/standalone) · [AGENTS.md](https://github.com/jku-win-se/MOMoT2/blob/standalone/AGENTS.md) |
 
 See the [branches guide](https://jku-win-se.github.io/MOMoT2/branches.html) on the project site for a detailed comparison.
@@ -31,13 +32,13 @@ Use **Help → Install New Software…** and add:
 https://jku-win-se.github.io/MOMoT2/eclipse/updates/latest/develop/
 ```
 
-Xtext and Henshin dependencies are resolved automatically from the update site.
+That URL is built from **`main`** and ships **MOEA Framework 2.12**. Xtext and Henshin dependencies are resolved automatically from the update site.
 
 ### Repository layout
 
 | Path | Description |
 | --- | --- |
-| `plugins/` | MOMoT core, MOEA bridge, configuration language, UI |
+| `plugins/` | MOMoT core, MOEA Framework 2.12 bridge (`at.ac.tuwien.big.moea`), configuration language, UI |
 | `features/` | Eclipse feature definitions |
 | `examples/` | Case-study examples (stack, CRA, modularization, TSE, …) |
 | `releng/` | Update site and release engineering |
@@ -63,11 +64,11 @@ After a successful build:
 bash scripts/deploy.sh
 ```
 
-This copies `releng/at.ac.tuwien.big.momot.update/target/repository/` into `docs/eclipse/updates/latest/develop/` and pushes to `main`. GitHub Pages serves the site from the `/docs` folder.
+This copies `releng/at.ac.tuwien.big.momot.update/target/repository/` into `docs/eclipse/updates/latest/develop/` and pushes to `main`. GitHub Pages serves the site from the `/docs` folder. Only publish from **`main`** to this URL so the public site stays on MOEA 2.12.
 
 ### Migration
 
-This branch was modernized for Eclipse 2026-03 / Tycho 4.x. See [MIGRATION.md](MIGRATION.md).
+This branch was modernized for Eclipse 2026-03 / Tycho 4.x and keeps **MOEA Framework 2.12**. The MOEA 5.1 port lives on [`moea-5.1`](https://github.com/jku-win-se/MOMoT2/tree/moea-5.1). See [MIGRATION.md](MIGRATION.md).
 
 ---
 

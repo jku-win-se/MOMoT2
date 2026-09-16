@@ -14,11 +14,12 @@ Search-based optimization techniques can then be used to search for a Pareto-opt
 
 ### Repository branches
 
-This GitHub repository hosts two development lines:
+This GitHub repository hosts three development lines:
 
 | Branch | For |
 | --- | --- |
-| **`main`** | Eclipse IDE install, full examples, [update site]({{ site.baseurl }}/eclipse/updates/) |
+| **`main`** | Eclipse IDE install, full examples, [update site]({{ site.baseurl }}/eclipse/updates/) (MOEA Framework 2.12) |
+| **`moea-5.1`** | Same Eclipse distribution, ported to [MOEA Framework 5.1](https://github.com/jku-win-se/MOMoT2/tree/moea-5.1) |
 | **`standalone`** | Docker REST runner, MCP agent tooling, headless CI |
 
 See the **[full branches guide]({{ site.baseurl }}/branches)** for clone commands, build instructions, and a decision table.

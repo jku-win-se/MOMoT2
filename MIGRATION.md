@@ -84,6 +84,10 @@ The TSE examples under [examples/tse](examples/tse) were migrated to a newer bas
   - `BUILD SUCCESS`
   - 22/22 reactor modules completed successfully
 
+## MOEA Framework versions
+- **`main`** (this branch) and the public Eclipse update site keep **MOEA Framework 2.12**.
+- The **MOEA Framework 5.1** port (breaking API changes in `SearchExecutor`, `SearchAnalyzer`, algorithm factories, and `.momot` scripts) is maintained on [`moea-5.1`](https://github.com/jku-win-se/MOMoT2/tree/moea-5.1). See that branch’s [MIGRATION.md](https://github.com/jku-win-se/MOMoT2/blob/moea-5.1/MIGRATION.md#7-moea-framework-upgrade-212-to-51).
+
 ## Notes
 - The migration intentionally favors compatibility with newer Eclipse tooling over preserving legacy build metadata that was no longer needed.
 - Some generated or serialized modeling artifacts changed format as a side effect of opening/saving them with newer Eclipse components.

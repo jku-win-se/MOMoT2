@@ -5,24 +5,25 @@ layout: index
 
 ### Overview
 
-[jku-win-se/MOMoT2](https://github.com/jku-win-se/MOMoT2) hosts two active development lines. Choose the branch that matches how you want to work with MOMoT.
+[jku-win-se/MOMoT2](https://github.com/jku-win-se/MOMoT2) hosts three active development lines. Choose the branch that matches how you want to work with MOMoT.
 
-| | **`main`** | **`standalone`** |
-| --- | --- | --- |
-| **Purpose** | Full Eclipse IDE distribution | Headless REST runner + AI/agent tooling |
-| **Primary audience** | Eclipse developers, researchers reproducing case studies | CI pipelines, Docker deployments, LLM agents |
-| **Install** | [Eclipse update site]({{ site.baseurl }}/eclipse/updates/) | `docker build` + REST `/run` API |
-| **Examples** | All wizard-based and TSE examples in-repo | `stack-example-minimal`, `test-suite`, `headless-example` |
-| **Build** | `mvn clean install` (full Tycho reactor) | `docker build -f Dockerfile.headless .` |
-| **Docs** | This site, case studies, [MIGRATION.md](https://github.com/jku-win-se/MOMoT2/blob/main/MIGRATION.md) | [AGENTS.md](https://github.com/jku-win-se/MOMoT2/blob/standalone/AGENTS.md), `doc/` runbooks |
+| | **`main`** | **`moea-5.1`** | **`standalone`** |
+| --- | --- | --- | --- |
+| **Purpose** | Full Eclipse IDE distribution | Same Eclipse distribution, MOEA 5.1 port | Headless REST runner + AI/agent tooling |
+| **MOEA Framework** | **2.12** | **5.1** | follows that branch’s engine |
+| **Primary audience** | Eclipse developers, researchers reproducing case studies | Developers evaluating the 5.x optimizer | CI pipelines, Docker deployments, LLM agents |
+| **Install** | [Eclipse update site]({{ site.baseurl }}/eclipse/updates/) | Clone and build; does **not** publish to the public update site | `docker build` + REST `/run` API |
+| **Examples** | All wizard-based and TSE examples in-repo | Same examples, adapted to 5.x APIs | `stack-example-minimal`, `test-suite`, `headless-example` |
+| **Build** | `mvn clean install` (full Tycho reactor) | `mvn clean install` | `docker build -f Dockerfile.headless .` |
+| **Docs** | This site, case studies, [MIGRATION.md](https://github.com/jku-win-se/MOMoT2/blob/main/MIGRATION.md) | [MIGRATION.md on `moea-5.1`](https://github.com/jku-win-se/MOMoT2/blob/moea-5.1/MIGRATION.md) | [AGENTS.md](https://github.com/jku-win-se/MOMoT2/blob/standalone/AGENTS.md), `doc/` runbooks |
 
 ### `main` — Full Eclipse distribution
 
 The **`main`** branch is the complete MOMoT Eclipse product:
 
-- **Plugins & features** — core engine, MOEA integration, MOMoT configuration language (Xtext), UI, branding, example wizards
+- **Plugins & features** — core engine, **MOEA Framework 2.12** integration, MOMoT configuration language (Xtext), UI, branding, example wizards
 - **Examples** — stack balancing, CRA, class modularization, EMF refactor, restructuring, TSE benchmarks, and more
-- **Update site** — published from `docs/` to GitHub Pages; install in Eclipse via **Help → Install New Software…**
+- **Update site** — published from `docs/` to GitHub Pages; this is the public install URL and stays on MOEA 2.12
 - **Migration notes** — see [MIGRATION.md](https://github.com/jku-win-se/MOMoT2/blob/main/MIGRATION.md) for the Eclipse 2026-03 / Tycho 4.x modernization
 
 **Clone and build:**
@@ -41,6 +42,18 @@ After a local build, publish a refreshed site with:
 
 ```bash
 bash scripts/deploy.sh
+```
+
+### `moea-5.1` — MOEA Framework 5.1 port
+
+The **`moea-5.1`** branch is the Eclipse distribution with the optimizer upgraded from MOEA Framework 2.12 to **[5.1](https://github.com/MOEAFramework/MOEAFramework/releases/tag/v5.1)**. It is a breaking API change (`SearchExecutor` / `SearchAnalyzer`, algorithm constructors, `.momot` imports). Details: [MIGRATION.md on `moea-5.1`](https://github.com/jku-win-se/MOMoT2/blob/moea-5.1/MIGRATION.md#7-moea-framework-upgrade-212-to-51).
+
+This branch does **not** publish to the public Eclipse update site. Build it locally:
+
+```bash
+git clone -b moea-5.1 https://github.com/jku-win-se/MOMoT2.git
+cd MOMoT2
+mvn clean install
 ```
 
 ### `standalone` — Headless REST + MCP
@@ -88,10 +101,11 @@ Key documentation on `standalone`:
 | Goal | Branch |
 | --- | --- |
 | Install MOMoT as Eclipse plugins and run examples from the IDE | **`main`** |
-| Publish or consume the Eclipse update site | **`main`** |
+| Publish or consume the public Eclipse update site (MOEA 2.12) | **`main`** |
+| Work on the MOEA Framework 5.1 port | **`moea-5.1`** |
 | Run MOMoT in Docker / CI without Eclipse | **`standalone`** |
 | Integrate MOMoT with an LLM agent via MCP | **`standalone`** |
 | Validate Henshin rules locally with the CLI validator | **`standalone`** |
 | Reproduce published case studies with wizards | **`main`** |
 
-Both branches share the same core search engine concepts (EMF, Henshin, MOEA, `.momot` scripts). The **`standalone`** branch trims the Eclipse UI and example surface area in favor of headless execution; **`main`** retains the full research distribution and GitHub Pages site.
+These branches share the same core search engine concepts (EMF, Henshin, MOEA Framework, `.momot` scripts). On **`main`**, the bundled optimizer is MOEA Framework **2.12**. **`moea-5.1`** is the 5.x port of that Eclipse line. The **`standalone`** branch trims the Eclipse UI and example surface area in favor of headless execution; **`main`** retains the full research distribution and GitHub Pages site.
