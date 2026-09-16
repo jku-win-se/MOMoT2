@@ -2,7 +2,9 @@
 
 [![Project Page](https://img.shields.io/badge/docs-GitHub%20Pages-blue)](https://jku-win-se.github.io/MOMoT2/)
 
-MOMoT combines model-driven engineering (EMF/Henshin) with search-based optimization ([MOEA Framework 5.1](https://github.com/MOEAFramework/MOEAFramework/releases/tag/v5.1)) to solve complex problems on the model level.
+MOMoT combines model-driven engineering (EMF/Henshin) with search-based optimization to solve complex problems on the model level.
+
+This is the **`moea-5.1`** branch: the Eclipse distribution ported to **[MOEA Framework 5.1](https://github.com/MOEAFramework/MOEAFramework/releases/tag/v5.1)**. The public Eclipse update site and **`main`** stay on **MOEA Framework 2.12**.
 
 **Project page:** https://jku-win-se.github.io/MOMoT2/
 
@@ -10,20 +12,23 @@ MOMoT combines model-driven engineering (EMF/Henshin) with search-based optimiza
 
 ## Repository branches
 
-This repository has two active branches. They target different workflows but share the same core technology.
+This repository has three active branches. They target different workflows but share the same core technology.
 
 | Branch | Purpose | Get started |
 | --- | --- | --- |
-| **`main`** (this branch) | Full **Eclipse IDE** distribution — plugins, wizards, all case-study examples, [update site](https://jku-win-se.github.io/MOMoT2/eclipse/updates/latest/develop/) | [Install in Eclipse](#install-in-eclipse) · [Build](#build) |
+| **`main`** | Full **Eclipse IDE** distribution with **MOEA Framework 2.12**, [public update site](https://jku-win-se.github.io/MOMoT2/eclipse/updates/latest/develop/) | [Clone `main`](https://github.com/jku-win-se/MOMoT2/tree/main) |
+| **`moea-5.1`** (this branch) | Same Eclipse distribution, ported to **MOEA Framework 5.1** | [Build](#build) · [MIGRATION.md](MIGRATION.md#7-moea-framework-upgrade-212-to-51) |
 | **`standalone`** | **Headless REST** runner, Docker, MCP server for AI agents, E2E test suite | [Clone `standalone`](https://github.com/jku-win-se/MOMoT2/tree/standalone) · [AGENTS.md](https://github.com/jku-win-se/MOMoT2/blob/standalone/AGENTS.md) |
 
 See the [branches guide](https://jku-win-se.github.io/MOMoT2/branches.html) on the project site for a detailed comparison.
 
 ---
 
-## `main` — Full Eclipse distribution
+## `moea-5.1` — Eclipse distribution with MOEA Framework 5.1
 
-### Install in Eclipse
+The public install URL below is served from **`main`** and ships **MOEA Framework 2.12**. To use this 5.1 port, clone and build this branch (do not publish it to that URL).
+
+### Install from `main` (MOEA 2.12)
 
 Use **Help → Install New Software…** and add:
 
@@ -50,20 +55,14 @@ Xtext and Henshin dependencies are resolved automatically from the update site.
 Requires Java 17+ and Maven with Tycho:
 
 ```bash
-git clone -b main https://github.com/jku-win-se/MOMoT2.git
+git clone -b moea-5.1 https://github.com/jku-win-se/MOMoT2.git
 cd MOMoT2
 mvn clean install
 ```
 
 ### Publish update site
 
-After a successful build:
-
-```bash
-bash scripts/deploy.sh
-```
-
-This copies `releng/at.ac.tuwien.big.momot.update/target/repository/` into `docs/eclipse/updates/latest/develop/` and pushes to `main`. GitHub Pages serves the site from the `/docs` folder.
+Do **not** run `scripts/deploy.sh` against `main`. That script on this branch defaults to `TARGET_BRANCH=moea-5.1` and refuses to overwrite the public 2.12 site.
 
 ### Migration
 

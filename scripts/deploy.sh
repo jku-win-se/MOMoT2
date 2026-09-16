@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-TARGET_BRANCH="${TARGET_BRANCH:-main}"
+TARGET_BRANCH="${TARGET_BRANCH:-moea-5.1}"
 DEPLOY_REMOTE="${DEPLOY_REMOTE:-origin}"
 SOURCE_REPO_DIR="${SOURCE_REPO_DIR:-$(pwd)}"
 PAGES_ROOT="${PAGES_ROOT:-${SOURCE_REPO_DIR}/docs}"
@@ -14,6 +14,13 @@ SKIP_PUSH="${SKIP_PUSH:-false}"
 if [[ "${TRAVIS_PULL_REQUEST:-false}" != "false" ]]; then
     echo "Skipping deployment for pull request build."
     exit 0
+fi
+
+if [[ "${TARGET_BRANCH}" == "main" && "${FORCE_MAIN_PUBLISH:-false}" != "true" ]]; then
+    echo "Refusing to publish the MOEA 5.1 update site onto main." >&2
+    echo "The public Eclipse update site on main ships MOEA Framework 2.12." >&2
+    echo "This script defaults to TARGET_BRANCH=moea-5.1. Set FORCE_MAIN_PUBLISH=true only if you intentionally override that." >&2
+    exit 1
 fi
 
 if [[ ! -d "${UPDATE_SITE_DIR}" ]]; then

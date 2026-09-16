@@ -1,6 +1,6 @@
 # Migration Guide
 
-This repository was migrated to work with newer Eclipse/Tycho/Xtext tooling, a modern Java 17+ development setup, and **MOEA Framework 5.1** (from 2.12). This file summarizes the changes so the rationale is documented in one place.
+This **`moea-5.1`** branch was migrated to work with newer Eclipse/Tycho/Xtext tooling, a modern Java 17+ development setup, and **MOEA Framework 5.1** (from 2.12). **`main`** and the public Eclipse update site remain on **MOEA Framework 2.12**. This file summarizes the changes so the rationale is documented in one place.
 
 ## What Changed
 
@@ -113,3 +113,4 @@ The six TSE Java bundles are now Maven/Tycho modules listed in [`examples/pom.xm
 - Some generated or serialized modeling artifacts changed format as a side effect of opening/saving them with newer Eclipse components.
 - If Eclipse still shows stale markers after pulling these changes, refresh the projects and run a clean build in the IDE.
 - Do not mix MOEA 2.12 imports (`org.moeaframework.core.operator.TournamentSelection`, `org.moeaframework.Executor`, `setObjective(int, double)`) with this branch.
+- Do not publish this branch’s p2 repository to the public `docs/eclipse/updates/latest/develop/` URL on `main`; that site stays on MOEA 2.12.
