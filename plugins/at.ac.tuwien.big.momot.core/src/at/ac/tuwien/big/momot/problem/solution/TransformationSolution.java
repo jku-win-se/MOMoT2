@@ -30,6 +30,8 @@ import org.eclipse.emf.ecore.EObject;
 import org.eclipse.emf.henshin.interpreter.EGraph;
 import org.eclipse.emf.henshin.model.Parameter;
 import org.moeaframework.core.Solution;
+import org.moeaframework.core.constraint.Constraint;
+import org.moeaframework.core.objective.Objective;
 import org.moeaframework.core.variable.Variable;
 
 public class TransformationSolution extends SearchSolution implements Comparable<TransformationSolution> {
@@ -145,17 +147,15 @@ public class TransformationSolution extends SearchSolution implements Comparable
 
    protected void copyConstraints(final Solution solution) {
       for(int i = 0; i < getNumberOfConstraints(); i++) {
-         if(solution.getConstraint(i) != null) {
-            setConstraint(i, solution.getConstraint(i).copy());
-         }
+         final Constraint constraint = solution.getConstraint(i);
+         setConstraint(i, constraint == null ? null : constraint.copy());
       }
    }
 
    protected void copyObjectives(final Solution solution) {
       for(int i = 0; i < getNumberOfObjectives(); i++) {
-         if(solution.getObjective(i) != null) {
-            setObjective(i, solution.getObjective(i).copy());
-         }
+         final Objective objective = solution.getObjective(i);
+         setObjective(i, objective == null ? null : objective.copy());
       }
    }
 
