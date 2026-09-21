@@ -21,6 +21,7 @@ hs_err_pid*
 
 # example run outputs
 **/output/
+**/cp.args
 
 # Keep published p2 site (copied from build output)
 !docs/eclipse/updates/latest/develop/**

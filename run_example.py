@@ -35,21 +35,23 @@ def run_example(example_module_dir, main_class, extra_args=None):
                 if f.endswith(".jar"):
                     cp_entries.append(os.path.join(lib_dir, f))
 
-    # Add tycho cached jars
+    # Add tycho cached jars (excluding MOEAFramework 2.x)
     tycho_cache = os.path.expanduser(r"~\.m2\repository\.cache\tycho")
     for root, dirs, files in os.walk(tycho_cache):
         for f in files:
             if f.endswith(".jar") and not f.endswith("-sources.jar") and not f.endswith("-javadoc.jar"):
-                if "MOEAFramework-2.12" in f:
+                if "MOEAFramework-2" in f or "MOEAFramework-1" in f:
                     continue
                 cp_entries.append(os.path.join(root, f))
 
-    # Also add tools libs if present
+    # Also add tools libs if present (excluding MOEAFramework 2.x)
     tools_dir = os.path.join(repo, "tools")
     if os.path.isdir(tools_dir):
         for root, dirs, files in os.walk(tools_dir):
             for f in files:
-                if f.endswith(".jar"):
+                if f.endswith(".jar") and not f.endswith("-sources.jar") and not f.endswith("-javadoc.jar"):
+                    if "MOEAFramework-2" in f or "MOEAFramework-1" in f:
+                        continue
                     cp_entries.append(os.path.join(root, f))
 
     # Convert to forward slashes for java argfile
