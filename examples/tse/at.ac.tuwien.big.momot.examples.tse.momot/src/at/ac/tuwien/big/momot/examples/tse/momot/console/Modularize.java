@@ -142,13 +142,13 @@ public class Modularize {
 			Double significance = 0.01;
 			
 			if(cmd.hasOption("i")) 
-				inputModel = cmd.getOptionValue("i", null);
+				inputModel = cmd.getOptionValue("i");
 			
 			if(cmd.hasOption("o")) 
-				outputDir = cmd.getOptionValue("o", null);
+				outputDir = cmd.getOptionValue("o");
 			
 			if(cmd.hasOption("r")) 
-				referenceFile = cmd.getOptionValue("r", null);
+				referenceFile = cmd.getOptionValue("r");
 			
 			if(cmd.hasOption("ps")) 
 				populationSize = Integer.parseInt(cmd.getOptionValue("ps", "100"));

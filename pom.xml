@@ -283,18 +283,12 @@
 					<dependencies>
 						<dependency>
 							<type>p2-installable-unit</type>
-							<artifactId>org.eclipse.equinox.ds</artifactId>
-						</dependency>
-						<dependency>
-							<type>p2-installable-unit</type>
 							<artifactId>org.eclipse.equinox.event</artifactId>
 						</dependency>
 						<dependency>
-      						<groupId>junit</groupId>
-    						<artifactId>junit</artifactId>
-	      						<version>4.13.2</version>
-      						<scope>test</scope>
-    					</dependency>
+							<type>p2-installable-unit</type>
+							<artifactId>org.junit</artifactId>
+						</dependency>
 					</dependencies>
 				</configuration>
 			</plugin>

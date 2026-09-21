@@ -93,6 +93,9 @@ MOMoT’s search engine used to ship **MOEA Framework 2.12** (2016-era). The bun
 
 #### Engine changes
 - Bundle metadata (`build.properties`, `META-INF/MANIFEST.MF`, `.classpath`) now references `MOEAFramework-5.1.jar` and exports the 5.x packages.
+- All MOEA 5.1 runtime dependencies are vendored in `plugins/at.ac.tuwien.big.moea/lib/` and included in `Bundle-ClassPath` and `bin.includes`: `commons-text 1.13.0`, `commons-lang3 3.17.0`, `commons-io 2.18.0`, `commons-cli 1.9.0`, `commons-math3 3.6.1`, `jcommon 1.0.24`, `jfreechart 1.5.5`, and `jna 5.16.0`. Stale duplicate JARs were removed.
+- Fixed `TransformationSolution` objective and constraint copy aliasing by copying `Objective` and `Constraint` instances in `copyObjectives` / `copyConstraints`.
+- Updated `SearchExecutor.withProblem(ISearchProblem)` to retain the `Problem` reference directly rather than relying on reflection.
 - `SearchExecutor` no longer extends `org.moeaframework.Executor`.
 - `SearchAnalyzer` no longer extends `org.moeaframework.Analyzer`.
 - `PopulationUtil` replaced removed `PopulationIO`; variables implement 5.x `getName` / `getDefinition` / `encode` / `decode`; mutations implement `Mutation.mutate(Solution)`.

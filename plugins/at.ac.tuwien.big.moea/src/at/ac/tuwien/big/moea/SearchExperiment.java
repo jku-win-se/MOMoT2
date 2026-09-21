@@ -77,7 +77,10 @@ public class SearchExperiment<S extends Solution> extends IndicatorConfiguration
       for(final IRegisteredAlgorithm<? extends Algorithm> algorithm : getSearchOrchestration().getAlgorithms()) {
          final SearchExecutor executor = new SearchExecutor(createProblem()).setName(getAlgorithmName(algorithm))
                .withMaxEvaluations(getMaxEvaluations()).withInstrumenter(createInstrumenter())
-               .withAlgorithm(algorithm.getRegisteredName()).withEpsilon(getEpsilon()).distributeOnAllCores();
+               .withAlgorithm(algorithm.getRegisteredName()).distributeOnAllCores();
+         if(getEpsilon() != null) {
+            executor.withEpsilon(getEpsilon());
+         }
          attachProgressListeners(executor);
          executors.add(executor);
       }
@@ -97,7 +100,9 @@ public class SearchExperiment<S extends Solution> extends IndicatorConfiguration
       }
 
       instrumenter.withFrequency(Frequency.ofEvaluations(getFrequency()));
-      instrumenter.withEpsilon(getEpsilon());
+      if(getEpsilon() != null) {
+         instrumenter.withEpsilon(getEpsilon());
+      }
 
       if(isAdaptiveMultimethodVariation()) {
          instrumenter.attachAdaptiveMultimethodVariationCollector();

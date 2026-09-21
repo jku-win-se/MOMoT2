@@ -61,8 +61,8 @@ import org.jfree.data.xy.XYDataset;
 import org.jfree.data.xy.XYSeries;
 import org.jfree.data.xy.YIntervalSeries;
 import org.jfree.data.xy.YIntervalSeriesCollection;
-import org.jfree.ui.RectangleEdge;
-import org.jfree.ui.RectangleInsets;
+import org.jfree.chart.ui.RectangleEdge;
+import org.jfree.chart.ui.RectangleInsets;
 import org.moeaframework.analysis.collector.Accumulator;
 import org.moeaframework.analysis.diagnostics.PaintHelper;
 
@@ -171,7 +171,7 @@ public class MetricPlotter {
       final NumberAxis yAxis = new NumberAxis("Value");
       final BoxAndWhiskerRenderer renderer = new BoxAndWhiskerRenderer();
       // renderer.setFillBox(false);
-      renderer.setBaseToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
+      renderer.setDefaultToolTipGenerator(new BoxAndWhiskerToolTipGenerator());
       renderer.setMeanVisible(true);
       renderer.setMedianVisible(true);
 

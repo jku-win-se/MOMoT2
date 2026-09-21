@@ -49,7 +49,7 @@ public class MOMoTSearch {
 	}
 	
 	public static void executeCaseStudy(String model, String referenceFile, String outputDir) {
-		executeCaseStudy(model, referenceFile, outputDir, POPULATION_SIZE, NR_ITERATIONS, NR_RUNS);
+		executeCaseStudy(model, referenceFile, outputDir, 10, 10, 1);
 	}
 	
 	public static void executeCaseStudy(String model, String referenceFile, String outputDir, int populationSize, int nrIterations, int nrRuns) {
@@ -79,11 +79,11 @@ public class MOMoTSearch {
 			EvolutionaryAlgorithmFactory<TransformationSolution> evolutionary = 
 					moduleSearch.createEvolutionaryAlgorithmFactory(POPULATION_SIZE);
 				
-			search.addAlgorithm("NSGA-III_" + j, evolutionary.createNSGAIII(
-					new TournamentSelection(2),
-					new OnePointCrossover(1), 
-					new TransformationPlaceholderMutation(0.1),
-					new TransformationVariableMutation(moduleSearch.getSearchHelper(), 0.2)));
+//			search.addAlgorithm("NSGA-III_" + j, evolutionary.createNSGAIII(
+//					new TournamentSelection(2),
+//					new OnePointCrossover(1), 
+//					new TransformationPlaceholderMutation(0.1),
+//					new TransformationVariableMutation(moduleSearch.getSearchHelper(), 0.2)));
 			
 			search.addAlgorithm("NSGA-II_" + j, evolutionary.createNSGAII(
 					new TournamentSelection(2),
@@ -94,7 +94,7 @@ public class MOMoTSearch {
 			search.addAlgorithm("RandomSearch_" + j, evolutionary.createRandomSearch());
 			
 			nsgaIIruns.add("NSGA-II_" + j);
-			nsgaIIIruns.add("NSGA-III_" + j);
+			// nsgaIIIruns.add("NSGA-III_" + j);
 			randomSearchRuns.add("RandomSearch_" + j);			
 		}
 		
@@ -122,13 +122,15 @@ public class MOMoTSearch {
 		manager.saveObjectives(baseName + "_momot.pf");
 		
 		// NSGA-III
-		String[] nsgaiiiNames = nsgaIIIruns.toArray(new String[0]);		
-		manager.setBaseDirectory(outputDir + "/nsgaiii/");
-		manager.saveModels(nsgaiiiNames);
-		manager.savePopulation(baseName + "_nsgaiii.txt", nsgaiiiNames);
-			
-		manager.setBaseDirectory(outputDir);
-		manager.saveObjectives(baseName + "_nsgaiii.pf", nsgaiiiNames);
+		if(!nsgaIIIruns.isEmpty()) {
+			String[] nsgaiiiNames = nsgaIIIruns.toArray(new String[0]);		
+			manager.setBaseDirectory(outputDir + "/nsgaiii/");
+			manager.saveModels(nsgaiiiNames);
+			manager.savePopulation(baseName + "_nsgaiii.txt", nsgaiiiNames);
+				
+			manager.setBaseDirectory(outputDir);
+			manager.saveObjectives(baseName + "_nsgaiii.pf", nsgaiiiNames);
+		}
 		
 		// NSGA-II
 		String[] nsgaiiNames = nsgaIIruns.toArray(new String[0]);		

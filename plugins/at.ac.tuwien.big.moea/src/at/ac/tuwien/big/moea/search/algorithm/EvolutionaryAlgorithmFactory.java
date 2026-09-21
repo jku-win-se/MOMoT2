@@ -128,9 +128,10 @@ public class EvolutionaryAlgorithmFactory<S extends Solution> extends AbstractAl
       return new AbstractRegisteredAlgorithm<NSGAII>() {
          @Override
          public NSGAII createAlgorithm() {
+            final int outer = divisionsOuter <= 0 ? DEFAULT_DIVISION_OUTER : divisionsOuter;
             return new NSGAII(createProblem(), getPopulationSize(),
                   new ReferencePointNondominatedSortingPopulation(
-                        getSearchOrchestration().getProblem().getNumberOfObjectives(), new NormalBoundaryDivisions(divisionsOuter, divisionsInner)),
+                        getSearchOrchestration().getProblem().getNumberOfObjectives(), new NormalBoundaryDivisions(outer, divisionsInner)),
                   createEpsilonBoxArchive(), selection, createVariation(variation), createInitialization());
          }
       };

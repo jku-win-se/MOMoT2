@@ -442,8 +442,11 @@ public class SearchExecutor {
 
    public SearchExecutor withProblem(final ISearchProblem<?> problem) {
       if(problem != null) {
+         this.problem = problem;
          this.problemClass = problem.getClass();
          this.problemArguments = new Object[] { problem.getFitnessFunction(), problem.getSolutionGenerator() };
+      } else {
+         this.problem = null;
       }
       return this;
    }

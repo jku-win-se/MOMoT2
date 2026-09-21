@@ -486,8 +486,11 @@ public class SearchAnalyzer {
 
    public <S extends org.moeaframework.core.Solution> SearchAnalyzer withProblem(final ISearchProblem<S> problem) {
       if(problem != null) {
+         this.problem = problem;
          this.problemClass = problem.getClass();
          this.problemArguments = new Object[] { problem.getFitnessFunction(), problem.getSolutionGenerator() };
+      } else {
+         this.problem = null;
       }
       return this;
    }

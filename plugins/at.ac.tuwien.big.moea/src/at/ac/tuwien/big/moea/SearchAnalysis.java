@@ -80,7 +80,9 @@ public class SearchAnalysis extends IndicatorConfiguration {
 
    protected SearchAnalyzer createAnalyzer() {
       final SearchAnalyzer analyzer = new SearchAnalyzer(getExperiment().getSearchOrchestration().createProblem());
-      analyzer.withEpsilon(getExperiment().getEpsilon());
+      if(getExperiment().getEpsilon() != null) {
+         analyzer.withEpsilon(getExperiment().getEpsilon());
+      }
       analyzer.withReferenceSet(getExperiment().getReferenceSetFile());
       analyzer.withSignifianceLevel(getSignificanceLevel());
 

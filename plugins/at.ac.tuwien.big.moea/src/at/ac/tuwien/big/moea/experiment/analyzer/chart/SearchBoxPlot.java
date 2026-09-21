@@ -19,7 +19,7 @@ import java.util.List;
 import java.util.Locale;
 
 import org.jfree.chart.ChartFactory;
-import org.jfree.chart.ChartUtilities;
+import org.jfree.chart.ChartUtils;
 import org.jfree.chart.JFreeChart;
 import org.jfree.chart.axis.CategoryAxis;
 import org.jfree.chart.axis.NumberAxis;
@@ -147,7 +147,7 @@ public final class SearchBoxPlot {
 
    public static void saveChart(final JFreeChart chart, final File file, final int width, final int height) {
       try {
-         ChartUtilities.saveChartAsPNG(file, chart, width, height);
+         ChartUtils.saveChartAsPNG(file, chart, width, height);
       } catch(final IOException e) {
          e.printStackTrace();
       }

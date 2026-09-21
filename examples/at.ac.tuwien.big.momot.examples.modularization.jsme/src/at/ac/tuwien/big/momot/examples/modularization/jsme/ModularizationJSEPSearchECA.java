@@ -71,7 +71,7 @@ public class ModularizationJSEPSearchECA {
 
    public static void main(final String... args) {
       init();
-      for(int i = 0; i < 20; i++) {
+      for(int i = 0; i < 1; i++) {
          final ModularizationJSEPSearchECA search = new ModularizationJSEPSearchECA();
          search.performSearch(INITIAL_MODEL, SOLUTION_LENGTH);
          ITERATION++;
@@ -83,11 +83,11 @@ public class ModularizationJSEPSearchECA {
    protected final String _parameterValueKey_0 = ModularizationRules.CreateModule.Parameter.MODULE_NAME;
 
    protected final ITransformationRepairer solutionRepairer = new TransformationPlaceholderRepairer();
-   protected final int populationSize = 300;
+   protected final int populationSize = 50;
 
-   protected final int maxEvaluations = 21000;
+   protected final int maxEvaluations = 200;
 
-   protected final int nrRuns = 30;
+   protected final int nrRuns = 1;
 
    protected IFitnessDimension<TransformationSolution> _createConstraint_0(
          final TransformationSearchOrchestration orchestration) {
@@ -304,9 +304,9 @@ public class ModularizationJSEPSearchECA {
       final SearchHelper _searchHelper = orchestration.getSearchHelper();
       final TransformationVariableMutation _transformationVariableMutation = new TransformationVariableMutation(
             _searchHelper, 0.10);
-      final IRegisteredAlgorithm<NSGAII> _createNSGAIII = moea.createNSGAIII(0, 6, _tournamentSelection,
+      final IRegisteredAlgorithm<NSGAII> _createNSGAII = moea.createNSGAII(_tournamentSelection,
             _onePointCrossover, _transformationPlaceholderMutation, _transformationVariableMutation);
-      return _createNSGAIII;
+      return _createNSGAII;
    }
 
    protected IRegisteredAlgorithm<NSGAII> _createRegisteredAlgorithm_1(
@@ -376,7 +376,6 @@ public class ModularizationJSEPSearchECA {
             .createEvolutionaryAlgorithmFactory(populationSize);
       final LocalSearchAlgorithmFactory<TransformationSolution> local = orchestration
             .createLocalSearchAlgorithmFactory();
-      orchestration.addAlgorithm("NSGAIII", _createRegisteredAlgorithm_0(orchestration, moea, local));
       orchestration.addAlgorithm("NSGAII", _createRegisteredAlgorithm_1(orchestration, moea, local));
       orchestration.addAlgorithm("RS", _createRegisteredAlgorithm_2(orchestration, moea, local));
 

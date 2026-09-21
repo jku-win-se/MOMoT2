@@ -145,13 +145,17 @@ public class TransformationSolution extends SearchSolution implements Comparable
 
    protected void copyConstraints(final Solution solution) {
       for(int i = 0; i < getNumberOfConstraints(); i++) {
-         setConstraint(i, solution.getConstraint(i));
+         if(solution.getConstraint(i) != null) {
+            setConstraint(i, solution.getConstraint(i).copy());
+         }
       }
    }
 
    protected void copyObjectives(final Solution solution) {
       for(int i = 0; i < getNumberOfObjectives(); i++) {
-         setObjective(i, solution.getObjective(i));
+         if(solution.getObjective(i) != null) {
+            setObjective(i, solution.getObjective(i).copy());
+         }
       }
    }
 

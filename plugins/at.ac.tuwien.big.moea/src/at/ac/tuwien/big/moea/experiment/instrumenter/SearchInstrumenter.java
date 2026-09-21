@@ -18,7 +18,15 @@ public class SearchInstrumenter extends Instrumenter {
    protected Object[] problemArguments;
    protected String problemName;
 
-   public SearchInstrumenter() {}
+   public SearchInstrumenter() {
+      addExcludedPackage("javax");
+      addExcludedPackage("jdk");
+      addExcludedPackage("org.eclipse");
+      addExcludedPackage("org.apache");
+      addExcludedPackage("com.google");
+      addExcludedPackage("sun");
+      addExcludedPackage("com.sun");
+   }
 
    public SearchInstrumenter(final ISearchProblem<? extends Solution> problem) {
       this();
@@ -89,7 +97,14 @@ public class SearchInstrumenter extends Instrumenter {
    }
 
    public SearchInstrumenter withProblem(final ISearchProblem<? extends Solution> problem) {
-      return withProblemClass(problem.getClass(), problem.getFitnessFunction(), problem.getSolutionGenerator());
+      if(problem != null) {
+         this.problem = problem;
+         this.problemClass = problem.getClass();
+         this.problemArguments = new Object[] { problem.getFitnessFunction(), problem.getSolutionGenerator() };
+      } else {
+         this.problem = null;
+      }
+      return this;
    }
 
    public SearchInstrumenter withProblem(final Problem problemInstance) {
